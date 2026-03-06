@@ -239,6 +239,7 @@ export type Database = {
     Functions: {
       create_organization: { Args: { _name: string }; Returns: string }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
+      get_user_org_role: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
