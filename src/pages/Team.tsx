@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { AddMemberModal } from '@/components/AddMemberModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembers } from '@/hooks/use-data';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 
 const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-primary/20 text-primary',
@@ -13,14 +13,34 @@ const ROLE_COLORS: Record<string, string> = {
   va: 'bg-success/10 text-success',
 };
 
+const STATUS_OPTIONS = ['all', 'active', 'idle', 'offline'] as const;
+
 export default function TeamPage() {
   const { can } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
   const { data: users = [] } = useTeamMembers();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusFilter = searchParams.get('status') || 'all';
 
   if (!can('viewTeam')) {
     return <Navigate to="/tasks" replace />;
   }
+
+  const setStatusFilter = (s: string) => {
+    if (s === 'all') {
+      searchParams.delete('status');
+    } else {
+      searchParams.set('status', s);
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
+
+  const filtered = users.filter((u: any) => {
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'active') return u.status === 'active';
+    if (statusFilter === 'idle') return u.status === 'idle' || u.status === 'offline';
+    return u.status === statusFilter;
+  });
 
   return (
     <div>
@@ -31,8 +51,22 @@ export default function TeamPage() {
         )}
       </div>
 
+      <div className="flex gap-2 flex-wrap mb-4">
+        {STATUS_OPTIONS.map((s) => (
+          <Button
+            key={s}
+            variant={statusFilter === s ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter(s)}
+            className="capitalize"
+          >
+            {s}
+          </Button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {users.map((u: any) => {
+        {filtered.map((u: any) => {
           const initials = u.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
           return (
             <div key={u.id} className="glass-card rounded-2xl p-5">
@@ -54,6 +88,9 @@ export default function TeamPage() {
             </div>
           );
         })}
+        {filtered.length === 0 && (
+          <p className="text-muted-foreground col-span-full text-center py-8">No team members match this filter</p>
+        )}
       </div>
 
       <AddMemberModal open={addOpen} onClose={() => setAddOpen(false)} />

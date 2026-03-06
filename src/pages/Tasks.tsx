@@ -8,6 +8,7 @@ import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTasks, useVAs, useTimers } from '@/hooks/use-data';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
+import { useSearchParams } from 'react-router-dom';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
@@ -22,10 +23,15 @@ export default function TasksPage() {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [vaFilter, setVaFilter] = useState('all');
   const [tick, setTick] = useState(0);
+  const [searchParams] = useSearchParams();
 
   const { data: allTasks = [] } = useTasks();
   const { data: vas = [] } = useVAs();
   const { data: timers = [] } = useTimers();
+
+  // Map query param "running" to the tab value "active"
+  const statusParam = searchParams.get('status');
+  const defaultTab = statusParam === 'running' ? 'active' : 'pending';
 
   useEffect(() => {
     const interval = setInterval(() => setTick(t => t + 1), 1000);
@@ -94,7 +100,7 @@ export default function TasksPage() {
         </Select>
       </div>
 
-      <Tabs defaultValue="pending">
+      <Tabs defaultValue={defaultTab}>
         <TabsList className="bg-secondary/50 border border-border/30">
           {statuses.map(s => (
             <TabsTrigger key={s} value={s} className="capitalize data-[state=active]:bg-primary/20 data-[state=active]:text-primary">{s} ({filterTasks(s).length})</TabsTrigger>
