@@ -27,7 +27,10 @@ export default function Dashboard() {
   const { data: timers = [] } = useTimers();
   const { data: tasks = [] } = useTasks();
 
-  // Live tick for stats
+  // Auto-detect idle team members (15 min no activity)
+  useIdleDetection();
+
+
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
