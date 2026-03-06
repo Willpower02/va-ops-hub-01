@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, AlertCircle } from 'lucide-react';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
 
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-success',
-  paused: 'bg-warning',
-  idle: 'bg-muted-foreground/40',
-  offline: 'bg-foreground/30',
-};
-
 const STATUS_BORDER: Record<string, string> = {
   active: 'border-success/30 glow-border-success',
-  paused: 'border-warning/30',
+  paused: 'border-warning/30 glow-border-warning',
   idle: 'border-border/50',
   offline: 'border-border/30',
+};
+
+const STATUS_DOT: Record<string, string> = {
+  active: 'status-dot-active',
+  paused: 'status-dot-paused',
+  idle: 'status-dot-idle',
+  offline: 'status-dot-offline',
 };
 
 const AVATAR_COLORS = [
@@ -64,18 +64,21 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
   return (
     <div
       onClick={() => navigate(`/va/${va.id}`)}
-      className={`glass-card rounded-2xl border ${STATUS_BORDER[status]} p-5 cursor-pointer hover:scale-[1.02] transition-all duration-300 group ${isIdle ? 'opacity-70' : ''}`}
+      className={`glass-card rounded-2xl border ${STATUS_BORDER[status]} p-5 cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 group ${isIdle ? 'opacity-70 hover:opacity-90' : ''}`}
     >
       <div className="flex items-start gap-3">
         <div className="relative">
-          <div className={`w-10 h-10 rounded-full ${AVATAR_COLORS[index % AVATAR_COLORS.length]} flex items-center justify-center font-bold text-sm shrink-0`}>
+          <div className={`w-10 h-10 rounded-full ${AVATAR_COLORS[index % AVATAR_COLORS.length]} flex items-center justify-center font-bold text-sm shrink-0 transition-transform duration-300 group-hover:scale-110`}>
             {initials}
           </div>
-          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${STATUS_COLORS[status]} ${status === 'active' ? 'animate-pulse' : ''}`} />
+          <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card ${STATUS_DOT[status]}`} />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-foreground truncate">{va.name}</h3>
-          <p className="text-xs text-muted-foreground capitalize mt-0.5">{status}</p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className={`${STATUS_DOT[status]} !w-1.5 !h-1.5`} />
+            <p className="text-xs text-muted-foreground capitalize">{status}</p>
+          </div>
         </div>
         {isIdle && pendingCount === 0 && (
           <div className="shrink-0" title="No tasks assigned">
@@ -88,7 +91,7 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
         {activeTask ? (
           <div className="bg-success/10 border border-success/20 rounded-xl px-3 py-2">
             <p className="text-xs font-medium text-success truncate">{activeTask.title}</p>
-            <p className="text-lg font-bold text-success timer-digits">{formatTime(elapsed)}</p>
+            <p className="text-lg font-bold text-success timer-glow">{formatTime(elapsed)}</p>
           </div>
         ) : isIdle && pendingCount > 0 ? (
           <div className="bg-warning/10 border border-warning/20 rounded-xl px-3 py-2">
