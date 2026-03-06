@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   userEmail: string | null;
   userName: string;
-  role: Role;
+  role: Role | null;
   orgId: string | null;
   loading: boolean;
   can: (action: keyof typeof ROLE_PERMISSIONS['admin']) => boolean;
@@ -18,7 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   userEmail: null,
   userName: '',
-  role: 'viewer',
+  role: null,
   orgId: null,
   loading: true,
   can: () => false,
@@ -29,7 +29,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<Role>('viewer');
+  const [role, setRole] = useState<Role | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -42,10 +42,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .maybeSingle();
     if (data) {
       setOrgId(data.organization_id);
-      setRole((data.role as Role) || 'viewer');
+      setRole((data.role as Role) || null);
     } else {
       setOrgId(null);
-      setRole('viewer');
+      setRole(null);
     }
   }, []);
 
@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTimeout(() => fetchOrgMembership(sess.user.id), 0);
       } else {
         setOrgId(null);
-        setRole('viewer');
+        setRole(null);
       }
       setLoading(false);
     });
@@ -79,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [fetchOrgMembership]);
 
   const can = useCallback((action: keyof typeof ROLE_PERMISSIONS['admin']): boolean => {
+    if (!role) return false;
     return ROLE_PERMISSIONS[role]?.[action] ?? false;
   }, [role]);
 
