@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AddMemberModal } from '@/components/AddMemberModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUsers } from '@/lib/store';
-import { useForceUpdate } from '@/hooks/use-force-update';
+import { useTeamMembers } from '@/hooks/use-data';
 
 const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-primary text-primary-foreground',
@@ -18,9 +17,7 @@ const ROLE_COLORS: Record<string, string> = {
 export default function TeamPage() {
   const { can } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
-  const forceUpdate = useForceUpdate();
-
-  const users = getUsers();
+  const { data: users = [] } = useTeamMembers();
 
   return (
     <div>
@@ -32,8 +29,8 @@ export default function TeamPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {users.map(u => {
-          const teamLead = u.assigned_team_lead_id ? getUsers().find(tl => tl.id === u.assigned_team_lead_id) : null;
+        {users.map((u: any) => {
+          const teamLead = u.assigned_team_lead_id ? users.find((tl: any) => tl.id === u.assigned_team_lead_id) : null;
           return (
             <div key={u.id} className="bg-card rounded-xl border p-5">
               <div className="flex items-start gap-3">
@@ -59,7 +56,7 @@ export default function TeamPage() {
         })}
       </div>
 
-      <AddMemberModal open={addOpen} onClose={() => setAddOpen(false)} onAdded={forceUpdate} />
+      <AddMemberModal open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   );
 }

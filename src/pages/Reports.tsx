@@ -1,38 +1,40 @@
-import { getTimers, getTasks, getVAs, formatTime, getUsers } from '@/lib/store';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTimers, useTasks, useVAs, useTeamMembers } from '@/hooks/use-data';
+import { formatTime, getElapsedSeconds } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 
 export default function ReportsPage() {
   const { can } = useAuth();
-  const timers = getTimers();
-  const tasks = getTasks();
-  const vas = getVAs();
+  const { data: timers = [] } = useTimers();
+  const { data: tasks = [] } = useTasks();
+  const { data: vas = [] } = useVAs();
+  const { data: members = [] } = useTeamMembers();
 
   const now = Date.now();
   const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-  const weekTimers = timers.filter(t => t.started_at >= weekAgo);
-  const totalWeekSeconds = weekTimers.reduce((s, t) => s + t.total_seconds, 0);
-  const completedTasks = tasks.filter(t => t.status === 'completed');
-  const weekCompleted = completedTasks.filter(t => t.completed_at && new Date(t.completed_at).getTime() >= weekAgo);
+  const weekTimers = timers.filter((t: any) => t.started_at >= weekAgo);
+  const totalWeekSeconds = weekTimers.reduce((s: number, t: any) => s + t.total_seconds, 0);
+  const completedTasks = tasks.filter((t: any) => t.status === 'completed');
+  const weekCompleted = completedTasks.filter((t: any) => t.completed_at && new Date(t.completed_at).getTime() >= weekAgo);
 
   const avgDuration = completedTasks.length > 0
-    ? timers.filter(t => t.status === 'stopped').reduce((s, t) => s + t.total_seconds, 0) / completedTasks.length
+    ? timers.filter((t: any) => t.status === 'stopped').reduce((s: number, t: any) => s + t.total_seconds, 0) / completedTasks.length
     : 0;
 
-  const vaHours = vas.map(va => ({
+  const vaHours = vas.map((va: any) => ({
     name: `${va.first_name} ${va.last_name}`,
-    seconds: timers.filter(t => t.va_id === va.id).reduce((s, t) => s + t.total_seconds, 0),
-  })).sort((a, b) => b.seconds - a.seconds);
+    seconds: timers.filter((t: any) => t.va_id === va.id).reduce((s: number, t: any) => s + t.total_seconds, 0),
+  })).sort((a: any, b: any) => b.seconds - a.seconds);
 
   const topVA = vaHours[0];
 
   const handleExport = () => {
     const rows = [['VA', 'Task', 'Duration (s)', 'Status', 'Date']];
-    timers.forEach(t => {
-      const task = tasks.find(tk => tk.id === t.task_id);
-      const va = getUsers().find(u => u.id === t.va_id);
+    timers.forEach((t: any) => {
+      const task = tasks.find((tk: any) => tk.id === t.task_id);
+      const va = members.find((u: any) => u.id === t.va_id);
       rows.push([
         va ? `${va.first_name} ${va.last_name}` : '',
         task?.title || '',
@@ -67,7 +69,6 @@ export default function ReportsPage() {
           </Button>
         )}
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {metrics.map(m => (
           <div key={m.label} className="bg-card rounded-xl border p-5">
@@ -76,20 +77,16 @@ export default function ReportsPage() {
           </div>
         ))}
       </div>
-
       <div className="bg-card rounded-xl border p-5">
         <h3 className="font-semibold mb-4 text-foreground">VA Hours Leaderboard</h3>
         <div className="space-y-3">
           {vaHours.length === 0 && <p className="text-muted-foreground text-sm">No data yet</p>}
-          {vaHours.map((v, i) => (
+          {vaHours.map((v: any, i: number) => (
             <div key={v.name} className="flex items-center gap-3">
               <span className="text-sm font-medium w-6 text-muted-foreground">{i + 1}.</span>
               <span className="flex-1 text-sm font-medium text-foreground">{v.name}</span>
               <div className="w-32 bg-muted rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${topVA?.seconds ? (v.seconds / topVA.seconds) * 100 : 0}%` }}
-                />
+                <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${topVA?.seconds ? (v.seconds / topVA.seconds) * 100 : 0}%` }} />
               </div>
               <span className="text-sm font-mono text-muted-foreground w-20 text-right">{formatTime(v.seconds)}</span>
             </div>

@@ -1,181 +1,242 @@
-import { User, Task, TimerRecord, ActivityLog, Comment } from './types';
+import { supabase } from '@/integrations/supabase/client';
 
-const KEYS = {
-  users: 'vat_users',
-  tasks: 'vat_tasks',
-  timers: 'vat_timers',
-  activity: 'vat_activity_log',
-  comments: 'vat_comments',
-  currentUser: 'vat_current_user',
-  seeded: 'vat_seeded',
+// ---- Queries ----
+
+export const fetchTeamMembers = async (orgId: string) => {
+  const { data, error } = await supabase
+    .from('team_members')
+    .select('*')
+    .eq('organization_id', orgId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
 };
 
-function get<T>(key: string): T[] {
-  try {
-    return JSON.parse(localStorage.getItem(key) || '[]');
-  } catch { return []; }
-}
-
-function set<T>(key: string, data: T[]) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
-function uid() {
-  return crypto.randomUUID();
-}
-
-// Seed
-export function seedIfNeeded() {
-  if (localStorage.getItem(KEYS.seeded)) return;
-  const now = new Date().toISOString();
-  const users: User[] = [
-    { id: uid(), email: 'admin@vatracker.io', first_name: 'Alex', last_name: 'Morgan', role: 'admin', is_active: true, created_at: now },
-    { id: uid(), email: 'lead@vatracker.io', first_name: 'Jordan', last_name: 'Lee', role: 'team_lead', is_active: true, created_at: now },
-    { id: uid(), email: 'va@vatracker.io', first_name: 'Sam', last_name: 'Rivera', role: 'va', is_active: true, status: 'idle', last_activity_at: now, created_at: now },
-  ];
-  set(KEYS.users, users);
-  set(KEYS.tasks, []);
-  set(KEYS.timers, []);
-  set(KEYS.activity, []);
-  set(KEYS.comments, []);
-  localStorage.setItem(KEYS.currentUser, JSON.stringify(users[0]));
-  localStorage.setItem(KEYS.seeded, 'true');
-}
-
-// Users
-export const getUsers = () => get<User>(KEYS.users);
-export const getVAs = () => getUsers().filter(u => u.role === 'va');
-export const getUser = (id: string) => getUsers().find(u => u.id === id);
-export const addUser = (user: Omit<User, 'id' | 'created_at'>) => {
-  const users = getUsers();
-  const newUser: User = { ...user, id: uid(), created_at: new Date().toISOString() };
-  users.push(newUser);
-  set(KEYS.users, users);
-  logActivity(getCurrentUser()?.id || '', 'member_added', 'user', newUser.id, { name: `${user.first_name} ${user.last_name}` });
-  return newUser;
-};
-export const updateUser = (id: string, updates: Partial<User>) => {
-  const users = getUsers().map(u => u.id === id ? { ...u, ...updates } : u);
-  set(KEYS.users, users);
-  // Update current user if it's the same
-  const cur = getCurrentUser();
-  if (cur?.id === id) setCurrentUser({ ...cur, ...updates } as User);
+export const fetchVAs = async (orgId: string) => {
+  const { data, error } = await supabase
+    .from('team_members')
+    .select('*')
+    .eq('organization_id', orgId)
+    .eq('role', 'va')
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
 };
 
-// Current User
-export const getCurrentUser = (): User | null => {
-  try { return JSON.parse(localStorage.getItem(KEYS.currentUser) || 'null'); } catch { return null; }
-};
-export const setCurrentUser = (user: User) => localStorage.setItem(KEYS.currentUser, JSON.stringify(user));
-
-// Tasks
-export const getTasks = () => get<Task>(KEYS.tasks);
-export const getTask = (id: string) => getTasks().find(t => t.id === id);
-export const addTask = (task: Omit<Task, 'id' | 'created_at'>) => {
-  const tasks = getTasks();
-  const newTask: Task = { ...task, id: uid(), created_at: new Date().toISOString() };
-  tasks.push(newTask);
-  set(KEYS.tasks, tasks);
-  logActivity(getCurrentUser()?.id || '', 'task_created', 'task', newTask.id, { title: task.title });
-  return newTask;
-};
-export const updateTask = (id: string, updates: Partial<Task>) => {
-  const tasks = getTasks().map(t => t.id === id ? { ...t, ...updates } : t);
-  set(KEYS.tasks, tasks);
+export const fetchTeamMember = async (id: string) => {
+  const { data, error } = await supabase
+    .from('team_members')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error) throw error;
+  return data;
 };
 
-// Timers
-export const getTimers = () => get<TimerRecord>(KEYS.timers);
-export const getTimerForTask = (taskId: string) => getTimers().find(t => t.task_id === taskId && t.status !== 'stopped');
-export const getRunningTimerForVA = (vaId: string) => getTimers().find(t => t.va_id === vaId && t.status === 'running');
+export const fetchTasks = async (orgId: string) => {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('organization_id', orgId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
 
-export const startTimer = (taskId: string, vaId: string) => {
-  const timers = getTimers();
-  const existing = timers.find(t => t.task_id === taskId && t.status !== 'stopped');
+export const fetchTimers = async (orgId: string) => {
+  const { data, error } = await supabase
+    .from('timers')
+    .select('*')
+    .eq('organization_id', orgId);
+  if (error) throw error;
+  return data || [];
+};
+
+export const fetchComments = async (taskId: string) => {
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('task_id', taskId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+};
+
+// ---- Mutations ----
+
+export const addTeamMember = async (member: {
+  organization_id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  is_active: boolean;
+  status?: string;
+  last_activity_at?: string;
+  assigned_team_lead_id?: string;
+}) => {
+  const { data, error } = await supabase
+    .from('team_members')
+    .insert(member)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const updateTeamMember = async (id: string, updates: Record<string, any>) => {
+  const { error } = await supabase
+    .from('team_members')
+    .update(updates)
+    .eq('id', id);
+  if (error) throw error;
+};
+
+export const addTask = async (task: {
+  title: string;
+  description: string;
+  assigned_va_id: string;
+  created_by: string;
+  priority: string;
+  category: string;
+  status: string;
+  due_date?: string;
+  organization_id: string;
+}) => {
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert(task)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const updateTask = async (id: string, updates: Record<string, any>) => {
+  const { error } = await supabase
+    .from('tasks')
+    .update(updates)
+    .eq('id', id);
+  if (error) throw error;
+};
+
+export const addTimer = async (timer: {
+  task_id: string;
+  va_id: string;
+  started_at: number;
+  total_seconds: number;
+  status: string;
+  organization_id: string;
+}) => {
+  const { data, error } = await supabase
+    .from('timers')
+    .insert(timer)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const updateTimer = async (id: string, updates: Record<string, any>) => {
+  const { error } = await supabase
+    .from('timers')
+    .update(updates)
+    .eq('id', id);
+  if (error) throw error;
+};
+
+export const addComment = async (comment: {
+  task_id: string;
+  user_id: string;
+  comment: string;
+  organization_id: string;
+}) => {
+  const { data, error } = await supabase
+    .from('comments')
+    .insert(comment)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const logActivity = async (log: {
+  user_id: string;
+  action_type: string;
+  entity_type: string;
+  entity_id: string;
+  metadata: Record<string, unknown>;
+  organization_id: string;
+}) => {
+  await supabase.from('activity_logs').insert(log);
+};
+
+// ---- Timer operations ----
+
+export const startTimerOp = async (taskId: string, vaId: string, orgId: string, userId: string) => {
+  // Check for existing non-stopped timer
+  const { data: existing } = await supabase
+    .from('timers')
+    .select('*')
+    .eq('task_id', taskId)
+    .neq('status', 'stopped')
+    .maybeSingle();
+
   if (existing && existing.status === 'paused') {
-    // Resume
-    const updated = timers.map(t => t.id === existing.id ? { ...t, status: 'running' as const, started_at: Date.now(), total_seconds: t.total_seconds } : t);
-    set(KEYS.timers, updated);
-    updateTask(taskId, { status: 'active' });
-    updateUser(vaId, { status: 'active', last_activity_at: new Date().toISOString() });
-    logActivity(getCurrentUser()?.id || '', 'timer_started', 'timer', existing.id, {});
-    return;
+    await updateTimer(existing.id, { status: 'running', started_at: Date.now() });
+  } else if (!existing) {
+    await addTimer({ task_id: taskId, va_id: vaId, started_at: Date.now(), total_seconds: 0, status: 'running', organization_id: orgId });
   }
-  const timer: TimerRecord = { id: uid(), task_id: taskId, va_id: vaId, started_at: Date.now(), total_seconds: 0, status: 'running' };
-  timers.push(timer);
-  set(KEYS.timers, timers);
-  updateTask(taskId, { status: 'active' });
-  updateUser(vaId, { status: 'active', last_activity_at: new Date().toISOString() });
-  logActivity(getCurrentUser()?.id || '', 'timer_started', 'timer', timer.id, {});
+  await updateTask(taskId, { status: 'active' });
+  await updateTeamMember(vaId, { status: 'active', last_activity_at: new Date().toISOString() });
+  await logActivity({ user_id: userId, action_type: 'timer_started', entity_type: 'timer', entity_id: taskId, metadata: {}, organization_id: orgId });
 };
 
-export const pauseTimer = (taskId: string) => {
-  const timers = getTimers();
-  const timer = timers.find(t => t.task_id === taskId && t.status === 'running');
+export const pauseTimerOp = async (taskId: string, orgId: string, userId: string) => {
+  const { data: timer } = await supabase
+    .from('timers')
+    .select('*')
+    .eq('task_id', taskId)
+    .eq('status', 'running')
+    .maybeSingle();
   if (!timer) return;
   const elapsed = Math.floor((Date.now() - timer.started_at) / 1000);
-  const updated = timers.map(t => t.id === timer.id ? { ...t, status: 'paused' as const, paused_at: Date.now(), total_seconds: t.total_seconds + elapsed } : t);
-  set(KEYS.timers, updated);
-  updateTask(taskId, { status: 'paused' });
-  updateUser(timer.va_id, { status: 'paused' });
-  logActivity(getCurrentUser()?.id || '', 'timer_paused', 'timer', timer.id, {});
+  await updateTimer(timer.id, { status: 'paused', paused_at: Date.now(), total_seconds: timer.total_seconds + elapsed });
+  await updateTask(taskId, { status: 'paused' });
+  await updateTeamMember(timer.va_id, { status: 'paused' });
+  await logActivity({ user_id: userId, action_type: 'timer_paused', entity_type: 'timer', entity_id: timer.id, metadata: {}, organization_id: orgId });
 };
 
-export const stopTimer = (taskId: string) => {
-  const timers = getTimers();
-  const timer = timers.find(t => t.task_id === taskId && t.status !== 'stopped');
+export const stopTimerOp = async (taskId: string, orgId: string, userId: string) => {
+  const { data: timer } = await supabase
+    .from('timers')
+    .select('*')
+    .eq('task_id', taskId)
+    .neq('status', 'stopped')
+    .maybeSingle();
   if (!timer) return;
   let totalSec = timer.total_seconds;
   if (timer.status === 'running') {
     totalSec += Math.floor((Date.now() - timer.started_at) / 1000);
   }
-  const updated = timers.map(t => t.id === timer.id ? { ...t, status: 'stopped' as const, stopped_at: Date.now(), total_seconds: totalSec } : t);
-  set(KEYS.timers, updated);
-  updateTask(taskId, { status: 'completed', completed_at: new Date().toISOString() });
-  updateUser(timer.va_id, { status: 'idle' });
-  logActivity(getCurrentUser()?.id || '', 'timer_stopped', 'timer', timer.id, { total_seconds: totalSec });
+  await updateTimer(timer.id, { status: 'stopped', stopped_at: Date.now(), total_seconds: totalSec });
+  await updateTask(taskId, { status: 'completed', completed_at: new Date().toISOString() });
+  await updateTeamMember(timer.va_id, { status: 'idle' });
+  await logActivity({ user_id: userId, action_type: 'timer_stopped', entity_type: 'timer', entity_id: timer.id, metadata: { total_seconds: totalSec }, organization_id: orgId });
 };
 
-// Activity
-export const logActivity = (userId: string, actionType: string, entityType: 'task' | 'timer' | 'user', entityId: string, metadata: Record<string, unknown>) => {
-  const logs = get<ActivityLog>(KEYS.activity);
-  logs.push({ id: uid(), user_id: userId, action_type: actionType, entity_type: entityType, entity_id: entityId, metadata, created_at: new Date().toISOString() });
-  set(KEYS.activity, logs);
-};
+// ---- Helpers ----
 
-// Comments
-export const getComments = (taskId: string) => get<Comment>(KEYS.comments).filter(c => c.task_id === taskId);
-export const addComment = (taskId: string, userId: string, comment: string) => {
-  const comments = get<Comment>(KEYS.comments);
-  const newComment: Comment = { id: uid(), task_id: taskId, user_id: userId, comment, created_at: new Date().toISOString() };
-  comments.push(newComment);
-  set(KEYS.comments, comments);
-  logActivity(userId, 'comment_added', 'task', taskId, { comment });
-  return newComment;
-};
-
-// Helpers
 export const formatTime = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
+  const s = Math.floor(seconds % 60);
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
-export const getElapsedSeconds = (timer: TimerRecord): number => {
+export const getElapsedSeconds = (timer: { status: string; total_seconds: number; started_at: number }): number => {
   if (timer.status === 'running') {
     return timer.total_seconds + Math.floor((Date.now() - timer.started_at) / 1000);
   }
   return timer.total_seconds;
-};
-
-export const getTodayTotalForVA = (vaId: string): number => {
-  const today = new Date().toDateString();
-  return getTimers()
-    .filter(t => t.va_id === vaId)
-    .reduce((sum, t) => {
-      const timerDate = new Date(t.started_at).toDateString();
-      if (timerDate !== today) return sum;
-      return sum + getElapsedSeconds(t);
-    }, 0);
 };

@@ -6,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { getTasks, getVAs, getUser, getTimerForTask, getElapsedSeconds, formatTime } from '@/lib/store';
-import { Task, TaskStatus } from '@/lib/types';
+import { useTasks, useVAs, useTimers } from '@/hooks/use-data';
+import { getElapsedSeconds, formatTime } from '@/lib/store';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
@@ -23,27 +23,28 @@ export default function TasksPage() {
   const [vaFilter, setVaFilter] = useState('all');
   const [tick, setTick] = useState(0);
 
+  const { data: allTasks = [] } = useTasks();
+  const { data: vas = [] } = useVAs();
+  const { data: timers = [] } = useTimers();
+
   useEffect(() => {
     const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const allTasks = getTasks();
-  const vas = getVAs();
-
-  const filterTasks = (status: TaskStatus) =>
-    allTasks.filter(t => {
+  const filterTasks = (status: string) =>
+    allTasks.filter((t: any) => {
       if (t.status !== status) return false;
       if (priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
       if (vaFilter !== 'all' && t.assigned_va_id !== vaFilter) return false;
       return true;
     });
 
-  const statuses: TaskStatus[] = ['pending', 'active', 'paused', 'completed'];
+  const statuses = ['pending', 'active', 'paused', 'completed'];
 
-  const renderTask = (task: Task) => {
-    const va = getUser(task.assigned_va_id);
-    const timer = getTimerForTask(task.id);
+  const renderTask = (task: any) => {
+    const va = vas.find((v: any) => v.id === task.assigned_va_id);
+    const timer = timers.find((t: any) => t.task_id === task.id && t.status !== 'stopped');
     const elapsed = timer ? getElapsedSeconds(timer) : 0;
     return (
       <div key={task.id} className="bg-card rounded-lg border p-4 flex items-center gap-4">
@@ -89,7 +90,7 @@ export default function TasksPage() {
           <SelectTrigger className="w-44"><SelectValue placeholder="Assigned VA" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All VAs</SelectItem>
-            {vas.map(v => <SelectItem key={v.id} value={v.id}>{v.first_name} {v.last_name}</SelectItem>)}
+            {vas.map((v: any) => <SelectItem key={v.id} value={v.id}>{v.first_name} {v.last_name}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -111,7 +112,7 @@ export default function TasksPage() {
         ))}
       </Tabs>
 
-      <CreateTaskModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={() => setTick(t => t + 1)} />
+      <CreateTaskModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </div>
   );
 }

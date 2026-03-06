@@ -1,24 +1,12 @@
-import { LayoutDashboard, ListTodo, Users, BarChart3, Settings, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Users, BarChart3, Settings, LogOut } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUsers } from '@/lib/store';
+import { supabase } from '@/integrations/supabase/client';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
 } from '@/components/ui/sidebar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
@@ -31,8 +19,11 @@ const navItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { user, switchUser } = useAuth();
-  const allUsers = getUsers();
+  const { profile, role } = useAuth();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -68,33 +59,21 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 w-full px-2 py-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left">
-              <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground text-xs font-bold shrink-0">
-                {user?.first_name?.[0]}{user?.last_name?.[0]}
-              </div>
-              {!collapsed && (
-                <>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{user?.first_name} {user?.last_name}</p>
-                    <p className="text-xs text-sidebar-foreground truncate capitalize">{user?.role?.replace('_', ' ')}</p>
-                  </div>
-                  <ChevronDown className="h-4 w-4 text-sidebar-foreground shrink-0" />
-                </>
-              )}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56">
-            <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Switch User (Demo)</div>
-            {allUsers.map(u => (
-              <DropdownMenuItem key={u.id} onClick={() => switchUser(u.id)} className="cursor-pointer">
-                <span className="font-medium">{u.first_name} {u.last_name}</span>
-                <span className="ml-auto text-xs text-muted-foreground capitalize">{u.role.replace('_', ' ')}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2 w-full px-2 py-2">
+          <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground text-xs font-bold shrink-0">
+            {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{profile?.first_name} {profile?.last_name}</p>
+              <p className="text-xs text-sidebar-foreground truncate capitalize">{role?.replace('_', ' ')}</p>
+            </div>
+          )}
+        </div>
+        <Button variant="ghost" size="sm" onClick={handleSignOut} className="w-full justify-start text-sidebar-foreground hover:text-sidebar-accent-foreground">
+          <LogOut className="h-4 w-4 mr-2" />
+          {!collapsed && 'Sign Out'}
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );
