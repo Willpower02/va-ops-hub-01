@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Search, Plus, Filter } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { VACard } from '@/components/VACard';
 import { AddMemberModal } from '@/components/AddMemberModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { getVAs } from '@/lib/store';
-import { User } from '@/lib/types';
+import { useVAs, useTimers, useTasks } from '@/hooks/use-data';
 
 export default function Dashboard() {
   const { can } = useAuth();
@@ -15,16 +14,10 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
-  const [vas, setVas] = useState<User[]>([]);
-  const [tick, setTick] = useState(0);
 
-  const refresh = () => { setVas(getVAs()); setTick(t => t + 1); };
-
-  useEffect(() => {
-    refresh();
-    const interval = setInterval(refresh, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data: vas = [] } = useVAs();
+  const { data: timers = [] } = useTimers();
+  const { data: tasks = [] } = useTasks();
 
   const filtered = vas.filter(va => {
     const nameMatch = `${va.first_name} ${va.last_name}`.toLowerCase().includes(search.toLowerCase());
@@ -58,22 +51,11 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search VAs..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9"
-          />
+          <Input placeholder="Search VAs..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <div className="flex gap-2">
           {['all', 'active', 'paused', 'idle', 'offline'].map(s => (
-            <Button
-              key={s}
-              variant={statusFilter === s ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter(s)}
-              className="capitalize"
-            >
+            <Button key={s} variant={statusFilter === s ? 'default' : 'outline'} size="sm" onClick={() => setStatusFilter(s)} className="capitalize">
               {s}
             </Button>
           ))}
@@ -90,15 +72,15 @@ export default function Dashboard() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" key={tick}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((va, i) => (
-            <VACard key={va.id} va={va} index={i} />
+            <VACard key={va.id} va={va} index={i} timers={timers} tasks={tasks} />
           ))}
         </div>
       )}
 
-      <AddMemberModal open={addMemberOpen} onClose={() => setAddMemberOpen(false)} onAdded={refresh} />
-      <CreateTaskModal open={createTaskOpen} onClose={() => setCreateTaskOpen(false)} onCreated={refresh} />
+      <AddMemberModal open={addMemberOpen} onClose={() => setAddMemberOpen(false)} />
+      <CreateTaskModal open={createTaskOpen} onClose={() => setCreateTaskOpen(false)} />
     </div>
   );
 }

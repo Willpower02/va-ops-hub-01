@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { User } from '@/lib/types';
-import { getElapsedSeconds, getRunningTimerForVA, getTasks, getTimers, formatTime, getTodayTotalForVA } from '@/lib/store';
 import { useNavigate } from 'react-router-dom';
+import { getElapsedSeconds, formatTime } from '@/lib/store';
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-success',
@@ -14,14 +13,29 @@ const AVATAR_COLORS = [
   'bg-primary', 'bg-accent', 'bg-secondary', 'bg-warning', 'bg-destructive',
 ];
 
-export function VACard({ va, index }: { va: User; index: number }) {
+interface VACardProps {
+  va: any;
+  index: number;
+  timers: any[];
+  tasks: any[];
+}
+
+export function VACard({ va, index, timers, tasks }: VACardProps) {
   const navigate = useNavigate();
   const [elapsed, setElapsed] = useState(0);
-  const runningTimer = getRunningTimerForVA(va.id);
-  const tasks = getTasks().filter(t => t.assigned_va_id === va.id);
-  const pendingCount = tasks.filter(t => t.status === 'pending').length;
-  const activeTask = tasks.find(t => t.status === 'active');
-  const todayTotal = getTodayTotalForVA(va.id);
+
+  const vaTasks = tasks.filter((t: any) => t.assigned_va_id === va.id);
+  const activeTask = vaTasks.find((t: any) => t.status === 'active');
+  const pendingCount = vaTasks.filter((t: any) => t.status === 'pending').length;
+  const runningTimer = timers.find((t: any) => t.va_id === va.id && t.status === 'running');
+
+  const todayStr = new Date().toDateString();
+  const todayTotal = timers
+    .filter((t: any) => t.va_id === va.id)
+    .reduce((sum: number, t: any) => {
+      if (new Date(t.started_at).toDateString() !== todayStr) return sum;
+      return sum + getElapsedSeconds(t);
+    }, 0);
 
   useEffect(() => {
     if (!runningTimer) { setElapsed(0); return; }
