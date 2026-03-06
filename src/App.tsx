@@ -33,11 +33,18 @@ function AppRoutes() {
     );
   }
 
-  if (!session) return <AuthPage />;
+  if (!session) {
+    console.log('[Auth] no session found — showing login');
+    return <AuthPage />;
+  }
+
+  console.log('[Auth] session found — user:', session.user.email);
+
   if (!orgId) return <CreateOrgPage />;
 
   // Determine the default home route based on role
   const homeRoute = role === 'va' ? '/tasks' : '/';
+  console.log('[Auth] redirecting to dashboard — role:', role, 'route:', homeRoute);
 
   return (
     <AppLayout>
