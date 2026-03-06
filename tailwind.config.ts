@@ -102,6 +102,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-dot": "pulse-dot 2s ease-in-out infinite",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+        "fade-in": "fade-in 0.5s ease-out",
       },
     },
   },
