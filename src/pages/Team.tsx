@@ -30,25 +30,22 @@ export default function TeamPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {users.map((u: any) => {
-          const teamLead = u.assigned_team_lead_id ? users.find((tl: any) => tl.id === u.assigned_team_lead_id) : null;
+          const initials = u.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
           return (
             <div key={u.id} className="bg-card rounded-xl border p-5">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
-                  {u.first_name[0]}{u.last_name[0]}
+                  {initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-card-foreground">{u.first_name} {u.last_name}</h3>
+                  <h3 className="font-semibold text-card-foreground">{u.name}</h3>
                   <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge className={`${ROLE_COLORS[u.role]} text-xs capitalize`}>{u.role.replace('_', ' ')}</Badge>
-                    {u.is_active ? (
-                      <span className="text-xs text-success">Active</span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Inactive</span>
-                    )}
+                    <Badge className={`${ROLE_COLORS[u.role] || ''} text-xs capitalize`}>{u.role.replace('_', ' ')}</Badge>
+                    <span className={`text-xs ${u.is_active !== false ? 'text-success' : 'text-muted-foreground'}`}>
+                      {u.is_active !== false ? 'Active' : 'Inactive'}
+                    </span>
                   </div>
-                  {teamLead && <p className="text-xs text-muted-foreground mt-1">Lead: {teamLead.first_name} {teamLead.last_name}</p>}
                 </div>
               </div>
             </div>

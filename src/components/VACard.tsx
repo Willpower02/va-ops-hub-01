@@ -24,26 +24,31 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
   const navigate = useNavigate();
   const [elapsed, setElapsed] = useState(0);
 
-  const vaTasks = tasks.filter((t: any) => t.assigned_va_id === va.id);
+  const vaTasks = tasks.filter((t: any) => t.assigned_team_member_id === va.id);
   const activeTask = vaTasks.find((t: any) => t.status === 'active');
   const pendingCount = vaTasks.filter((t: any) => t.status === 'pending').length;
-  const runningTimer = timers.find((t: any) => t.va_id === va.id && t.status === 'running');
+
+  const activeTaskTimer = activeTask
+    ? timers.find((t: any) => t.task_id === activeTask.id && t.status === 'running')
+    : null;
 
   const todayStr = new Date().toDateString();
   const todayTotal = timers
-    .filter((t: any) => t.va_id === va.id)
+    .filter((t: any) => vaTasks.some((vt: any) => vt.id === t.task_id))
     .reduce((sum: number, t: any) => {
       if (new Date(t.started_at).toDateString() !== todayStr) return sum;
       return sum + getElapsedSeconds(t);
     }, 0);
 
   useEffect(() => {
-    if (!runningTimer) { setElapsed(0); return; }
-    const update = () => setElapsed(getElapsedSeconds(runningTimer));
+    if (!activeTaskTimer) { setElapsed(0); return; }
+    const update = () => setElapsed(getElapsedSeconds(activeTaskTimer));
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [runningTimer?.id, runningTimer?.status, runningTimer?.started_at]);
+  }, [activeTaskTimer?.id, activeTaskTimer?.status, activeTaskTimer?.started_at]);
+
+  const initials = va.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <div
@@ -52,11 +57,11 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
     >
       <div className="flex items-start gap-3">
         <div className={`w-10 h-10 rounded-full ${AVATAR_COLORS[index % AVATAR_COLORS.length]} flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0`}>
-          {va.first_name[0]}{va.last_name[0]}
+          {initials}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-card-foreground truncate">{va.first_name} {va.last_name}</h3>
+            <h3 className="font-semibold text-card-foreground truncate">{va.name}</h3>
             <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${STATUS_COLORS[va.status || 'offline']} ${va.status === 'active' ? 'animate-pulse-dot' : ''}`} />
           </div>
           <p className="text-xs text-muted-foreground capitalize mt-0.5">{va.status || 'offline'}</p>

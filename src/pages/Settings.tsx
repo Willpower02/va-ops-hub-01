@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function SettingsPage() {
-  const { profile, role } = useAuth();
+  const { userName, userEmail, role } = useAuth();
+
+  const initials = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
 
   return (
     <div className="max-w-2xl">
@@ -15,11 +17,11 @@ export default function SettingsPage() {
           <h3 className="font-semibold text-foreground mb-3">Profile</h3>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
-              {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+              {initials}
             </div>
             <div>
-              <p className="font-medium text-foreground">{profile?.first_name} {profile?.last_name}</p>
-              <p className="text-sm text-muted-foreground">{profile?.email}</p>
+              <p className="font-medium text-foreground">{userName}</p>
+              <p className="text-sm text-muted-foreground">{userEmail}</p>
               <Badge className="mt-1 capitalize">{role?.replace('_', ' ')}</Badge>
             </div>
           </div>

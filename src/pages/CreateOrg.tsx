@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function CreateOrgPage() {
-  const { session, refreshProfile } = useAuth();
+  const { session, refreshOrg } = useAuth();
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -16,29 +16,20 @@ export default function CreateOrgPage() {
     if (!name.trim() || !session) return;
     setLoading(true);
     try {
-      // Create organization
       const { data: org, error: orgErr } = await supabase
         .from('organizations')
-        .insert({ name: name.trim(), owner_id: session.user.id })
+        .insert([{ name: name.trim(), owner_user_id: session.user.id }] as any)
         .select()
         .single();
       if (orgErr) throw orgErr;
 
-      // Link profile to org
-      const { error: profErr } = await supabase
-        .from('profiles')
-        .update({ organization_id: org.id })
-        .eq('id', session.user.id);
-      if (profErr) throw profErr;
-
-      // Set admin role
-      const { error: roleErr } = await supabase
-        .from('user_roles')
-        .insert({ user_id: session.user.id, role: 'admin', organization_id: org.id });
-      if (roleErr) throw roleErr;
+      const { error: memErr } = await supabase
+        .from('organization_members')
+        .insert([{ organization_id: org.id, user_id: session.user.id, role: 'admin' }] as any);
+      if (memErr) throw memErr;
 
       toast.success('Organization created!');
-      await refreshProfile();
+      await refreshOrg();
     } catch (err: any) {
       toast.error(err.message || 'Failed to create organization');
     } finally {
@@ -71,9 +62,7 @@ export default function CreateOrgPage() {
               {loading ? 'Creating...' : 'Create Organization'}
             </Button>
           </form>
-          <Button variant="ghost" className="w-full mt-2" onClick={handleSignOut}>
-            Sign Out
-          </Button>
+          <Button variant="ghost" className="w-full mt-2" onClick={handleSignOut}>Sign Out</Button>
         </div>
       </div>
     </div>
