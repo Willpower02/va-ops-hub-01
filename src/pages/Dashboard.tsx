@@ -11,6 +11,7 @@ import { AddMemberModal } from '@/components/AddMemberModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useVAs, useTimers, useTasks, useTeamMembers } from '@/hooks/use-data';
+import { useIdleDetection } from '@/hooks/use-idle-detection';
 import { Navigate } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -26,7 +27,10 @@ export default function Dashboard() {
   const { data: timers = [] } = useTimers();
   const { data: tasks = [] } = useTasks();
 
-  // Live tick for stats
+  // Auto-detect idle team members (15 min no activity)
+  useIdleDetection();
+
+
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
