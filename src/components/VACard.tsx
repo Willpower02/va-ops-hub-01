@@ -11,14 +11,14 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_BORDER: Record<string, string> = {
-  active: 'border-success/30',
+  active: 'border-success/30 glow-border-success',
   paused: 'border-warning/30',
-  idle: 'border-border',
-  offline: 'border-border',
+  idle: 'border-border/50',
+  offline: 'border-border/30',
 };
 
 const AVATAR_COLORS = [
-  'bg-primary', 'bg-accent', 'bg-secondary', 'bg-warning', 'bg-destructive',
+  'bg-primary/20 text-primary', 'bg-success/20 text-success', 'bg-secondary text-foreground', 'bg-warning/20 text-warning', 'bg-destructive/20 text-destructive',
 ];
 
 interface VACardProps {
@@ -64,17 +64,17 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
   return (
     <div
       onClick={() => navigate(`/va/${va.id}`)}
-      className={`bg-card rounded-xl border-2 p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 group ${STATUS_BORDER[status]} ${isIdle ? 'opacity-75' : ''}`}
+      className={`glass-card rounded-2xl border ${STATUS_BORDER[status]} p-5 cursor-pointer hover:scale-[1.02] transition-all duration-300 group ${isIdle ? 'opacity-70' : ''}`}
     >
       <div className="flex items-start gap-3">
         <div className="relative">
-          <div className={`w-10 h-10 rounded-full ${AVATAR_COLORS[index % AVATAR_COLORS.length]} flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0`}>
+          <div className={`w-10 h-10 rounded-full ${AVATAR_COLORS[index % AVATAR_COLORS.length]} flex items-center justify-center font-bold text-sm shrink-0`}>
             {initials}
           </div>
           <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${STATUS_COLORS[status]} ${status === 'active' ? 'animate-pulse' : ''}`} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-card-foreground truncate">{va.name}</h3>
+          <h3 className="font-semibold text-foreground truncate">{va.name}</h3>
           <p className="text-xs text-muted-foreground capitalize mt-0.5">{status}</p>
         </div>
         {isIdle && pendingCount === 0 && (
@@ -86,16 +86,16 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
 
       <div className="mt-4 space-y-2">
         {activeTask ? (
-          <div className="bg-success/10 border border-success/20 rounded-lg px-3 py-2">
+          <div className="bg-success/10 border border-success/20 rounded-xl px-3 py-2">
             <p className="text-xs font-medium text-success truncate">{activeTask.title}</p>
-            <p className="text-lg font-mono font-bold text-success tabular-nums">{formatTime(elapsed)}</p>
+            <p className="text-lg font-bold text-success timer-digits">{formatTime(elapsed)}</p>
           </div>
         ) : isIdle && pendingCount > 0 ? (
-          <div className="bg-warning/10 border border-warning/20 rounded-lg px-3 py-2">
+          <div className="bg-warning/10 border border-warning/20 rounded-xl px-3 py-2">
             <p className="text-xs font-medium text-warning">Idle — {pendingCount} task{pendingCount !== 1 ? 's' : ''} waiting</p>
           </div>
         ) : (
-          <div className="bg-muted rounded-lg px-3 py-2">
+          <div className="bg-muted/50 rounded-xl px-3 py-2">
             <p className="text-xs text-muted-foreground">No active task</p>
           </div>
         )}
@@ -107,7 +107,7 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
           </div>
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            <span>{formatTime(todayTotal)}</span>
+            <span className="timer-digits">{formatTime(todayTotal)}</span>
           </div>
         </div>
       </div>

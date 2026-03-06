@@ -10,7 +10,7 @@ const ACTION_CONFIG: Record<string, { icon: typeof Activity; label: string; colo
   timer_paused: { icon: Pause, label: 'paused a timer', color: 'text-warning' },
   timer_stopped: { icon: Square, label: 'stopped a timer', color: 'text-destructive' },
   member_added: { icon: UserPlus, label: 'added a team member', color: 'text-primary' },
-  org_created: { icon: Building, label: 'created the organization', color: 'text-accent' },
+  org_created: { icon: Building, label: 'created the organization', color: 'text-primary' },
 };
 
 export function ActivityFeed() {
@@ -18,8 +18,8 @@ export function ActivityFeed() {
 
   if (isLoading) {
     return (
-      <div className="bg-card rounded-xl border p-5">
-        <h3 className="font-semibold text-card-foreground mb-3 flex items-center gap-2">
+      <div className="glass-card rounded-2xl p-5">
+        <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
           <Activity className="h-4 w-4" /> Activity Feed
         </h3>
         <div className="space-y-3">
@@ -38,8 +38,8 @@ export function ActivityFeed() {
   }
 
   return (
-    <div className="bg-card rounded-xl border p-5">
-      <h3 className="font-semibold text-card-foreground mb-3 flex items-center gap-2">
+    <div className="glass-card rounded-2xl p-5">
+      <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
         <Activity className="h-4 w-4" /> Activity Feed
       </h3>
       {logs.length === 0 ? (
@@ -54,12 +54,12 @@ export function ActivityFeed() {
               const contextLabel = details.title || details.name || details.task_id?.slice(0, 8) || '';
 
               return (
-                <div key={log.id} className="flex items-start gap-3 py-2.5 border-b border-border/50 last:border-0">
-                  <div className={`w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5`}>
+                <div key={log.id} className="flex items-start gap-3 py-2.5 border-b border-border/30 last:border-0">
+                  <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-0.5">
                     <Icon className={`h-3.5 w-3.5 ${config.color}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-card-foreground">
+                    <p className="text-sm text-foreground">
                       <span className="font-medium">{config.label}</span>
                       {contextLabel && (
                         <span className="text-muted-foreground"> — {contextLabel}</span>
@@ -68,7 +68,7 @@ export function ActivityFeed() {
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
                       {details.duration_seconds != null && (
-                        <span className="ml-2">
+                        <span className="ml-2 timer-digits">
                           Duration: {Math.floor(details.duration_seconds / 60)}m {details.duration_seconds % 60}s
                         </span>
                       )}

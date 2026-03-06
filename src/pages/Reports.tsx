@@ -17,7 +17,6 @@ export default function ReportsPage() {
 
   const todayStr = new Date().toDateString();
 
-  // Per-member stats
   const memberStats = useMemo(() => {
     return members.map((m: any) => {
       const mTasks = tasks.filter((t: any) => t.assigned_team_member_id === m.id);
@@ -32,7 +31,6 @@ export default function ReportsPage() {
     }).sort((a: any, b: any) => b.totalSec - a.totalSec);
   }, [members, tasks, timers, todayStr]);
 
-  // Weekly productivity chart data
   const weeklyData = useMemo(() => {
     const days: { day: string; hours: number; tasks: number }[] = [];
     const now = new Date();
@@ -50,7 +48,6 @@ export default function ReportsPage() {
     return days;
   }, [timers, tasks]);
 
-  // Tasks completed per user chart data
   const perUserData = useMemo(() => {
     return memberStats
       .filter((m: any) => m.completed > 0)
@@ -61,12 +58,10 @@ export default function ReportsPage() {
     return <Navigate to="/tasks" replace />;
   }
 
-  // Today metrics
   const todayTimers = timers.filter((t: any) => new Date(t.started_at).toDateString() === todayStr);
   const totalTodaySeconds = todayTimers.reduce((s: number, t: any) => s + getElapsedSeconds(t), 0);
   const completedToday = tasks.filter((t: any) => t.status === 'completed' && new Date(t.created_at).toDateString() === todayStr).length;
 
-  const completedTasks = tasks.filter((t: any) => t.status === 'completed');
   const stoppedTimers = timers.filter((t: any) => t.status === 'stopped');
   const avgDuration = stoppedTimers.length > 0
     ? stoppedTimers.reduce((s: number, t: any) => s + t.duration_seconds, 0) / stoppedTimers.length
@@ -92,28 +87,26 @@ export default function ReportsPage() {
     { label: 'Hours Tracked Today', value: formatTime(totalTodaySeconds), icon: Clock, color: 'text-primary', bg: 'bg-primary/10' },
     { label: 'Tasks Completed Today', value: completedToday, icon: CheckCircle, color: 'text-success', bg: 'bg-success/10' },
     { label: 'Most Active Member', value: mostActive?.name || 'N/A', sub: mostActive ? formatTime(mostActive.totalSec) : '', icon: Trophy, color: 'text-warning', bg: 'bg-warning/10' },
-    { label: 'Avg Task Duration', value: formatTime(Math.round(avgDuration)), icon: Timer, color: 'text-accent', bg: 'bg-accent/10' },
+    { label: 'Avg Task Duration', value: formatTime(Math.round(avgDuration)), icon: Timer, color: 'text-primary', bg: 'bg-primary/10' },
   ];
 
-  const CHART_COLORS = ['hsl(224, 58%, 33%)', 'hsl(160, 60%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(0, 84%, 60%)', 'hsl(215, 20%, 30%)'];
+  const CHART_COLORS = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(48, 96%, 53%)', 'hsl(0, 84%, 60%)', 'hsl(215, 28%, 40%)'];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
           <p className="text-sm text-muted-foreground mt-1">Team performance overview</p>
         </div>
         {can('exportCsv') && (
-          <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
+          <Button variant="outline" onClick={handleExport} className="border-border/50 hover:bg-secondary"><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
         )}
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <div key={s.label} className="bg-card rounded-xl border p-5">
+          <div key={s.label} className="glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-2">
               <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center`}>
                 <s.icon className={`h-4 w-4 ${s.color}`} />
@@ -121,50 +114,47 @@ export default function ReportsPage() {
             </div>
             <p className="text-xs text-muted-foreground">{s.label}</p>
             <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
-            {s.sub && <p className="text-xs text-muted-foreground mt-0.5">{s.sub}</p>}
+            {s.sub && <p className="text-xs text-muted-foreground mt-0.5 timer-digits">{s.sub}</p>}
           </div>
         ))}
       </div>
 
-      {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Weekly productivity */}
-        <div className="bg-card rounded-xl border p-5">
+        <div className="glass-card rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="h-4 w-4 text-primary" />
-            <h3 className="font-semibold text-card-foreground">Weekly Productivity</h3>
+            <h3 className="font-semibold text-foreground">Weekly Productivity</h3>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={weeklyData} barCategoryGap="20%">
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(220, 13%, 91%)" />
-              <XAxis dataKey="day" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
-              <YAxis tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" label={{ value: 'Hours', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'hsl(220, 9%, 46%)' } }} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(215, 28%, 20%)" />
+              <XAxis dataKey="day" tick={{ fontSize: 12, fill: 'hsl(215, 20%, 55%)' }} stroke="hsl(215, 28%, 20%)" />
+              <YAxis tick={{ fontSize: 12, fill: 'hsl(215, 20%, 55%)' }} stroke="hsl(215, 28%, 20%)" label={{ value: 'Hours', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'hsl(215, 20%, 55%)' } }} />
               <Tooltip
-                contentStyle={{ borderRadius: '8px', border: '1px solid hsl(220, 13%, 91%)', fontSize: 12 }}
+                contentStyle={{ borderRadius: '12px', border: '1px solid hsl(215, 28%, 20%)', fontSize: 12, background: 'hsl(216, 45%, 14%)', color: 'hsl(213, 31%, 91%)' }}
                 formatter={(value: any, name: string) => [name === 'hours' ? `${value}h` : value, name === 'hours' ? 'Hours' : 'Tasks']}
               />
-              <Bar dataKey="hours" fill="hsl(224, 58%, 33%)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="tasks" fill="hsl(160, 60%, 45%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="hours" fill="hsl(217, 91%, 60%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="tasks" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Tasks per user */}
-        <div className="bg-card rounded-xl border p-5">
+        <div className="glass-card rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Users className="h-4 w-4 text-accent" />
-            <h3 className="font-semibold text-card-foreground">Tasks Completed Per Member</h3>
+            <Users className="h-4 w-4 text-primary" />
+            <h3 className="font-semibold text-foreground">Tasks Completed Per Member</h3>
           </div>
           {perUserData.length === 0 ? (
             <div className="flex items-center justify-center h-[220px] text-muted-foreground text-sm">No completed tasks yet</div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={perUserData} barCategoryGap="20%">
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(220, 13%, 91%)" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(215, 28%, 20%)" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'hsl(215, 20%, 55%)' }} stroke="hsl(215, 28%, 20%)" />
+                <YAxis tick={{ fontSize: 12, fill: 'hsl(215, 20%, 55%)' }} stroke="hsl(215, 28%, 20%)" allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ borderRadius: '8px', border: '1px solid hsl(220, 13%, 91%)', fontSize: 12 }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid hsl(215, 28%, 20%)', fontSize: 12, background: 'hsl(216, 45%, 14%)', color: 'hsl(213, 31%, 91%)' }}
                   formatter={(value: any, name: string) => [value, name === 'completed' ? 'Tasks' : 'Hours']}
                 />
                 <Bar dataKey="completed" radius={[4, 4, 0, 0]}>
@@ -178,25 +168,24 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Leaderboard */}
-      <div className="bg-card rounded-xl border p-5">
-        <h3 className="font-semibold mb-4 text-card-foreground">Team Leaderboard</h3>
+      <div className="glass-card rounded-2xl p-5">
+        <h3 className="font-semibold mb-4 text-foreground">Team Leaderboard</h3>
         <div className="space-y-3">
           {memberStats.length === 0 && <p className="text-muted-foreground text-sm">No data yet</p>}
           {memberStats.map((m: any, i: number) => (
             <div key={m.id} className="flex items-center gap-3">
-              <span className={`text-sm font-bold w-6 ${i === 0 ? 'text-warning' : i === 1 ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
+              <span className={`text-sm font-bold w-6 ${i === 0 ? 'text-warning' : 'text-muted-foreground'}`}>
                 {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
               </span>
               <span className="flex-1 text-sm font-medium text-foreground">{m.name}</span>
               <span className="text-xs text-muted-foreground">{m.completed} tasks</span>
-              <div className="w-28 bg-muted rounded-full h-2">
+              <div className="w-28 bg-secondary rounded-full h-2">
                 <div
                   className="bg-primary h-2 rounded-full transition-all"
                   style={{ width: `${mostActive?.totalSec ? (m.totalSec / mostActive.totalSec) * 100 : 0}%` }}
                 />
               </div>
-              <span className="text-sm font-mono text-muted-foreground w-20 text-right">{formatTime(m.totalSec)}</span>
+              <span className="text-sm text-muted-foreground w-20 text-right timer-digits">{formatTime(m.totalSec)}</span>
             </div>
           ))}
         </div>

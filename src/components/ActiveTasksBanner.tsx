@@ -29,7 +29,7 @@ export function ActiveTasksBanner({ tasks, timers, vas }: ActiveTasksBannerProps
   if (activeTimers.length === 0) return null;
 
   return (
-    <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+    <div className="glass-card rounded-2xl p-4 glow-border animate-glow-pulse">
       <div className="flex items-center gap-2 mb-3">
         <Zap className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold text-primary">Live Activity</h3>
@@ -37,13 +37,13 @@ export function ActiveTasksBanner({ tasks, timers, vas }: ActiveTasksBannerProps
       </div>
       <div className="space-y-2">
         {activeTimers.map(({ task, timer, va }) => (
-          <div key={task.id} className="flex items-center gap-3 bg-card rounded-lg px-3 py-2 border">
+          <div key={task.id} className="flex items-center gap-3 bg-secondary/50 rounded-xl px-3 py-2 border border-border/30">
             <div className="w-2 h-2 rounded-full bg-success animate-pulse shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-card-foreground truncate">{task.title}</p>
+              <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
               <p className="text-xs text-muted-foreground">{va?.name || 'Unassigned'}</p>
             </div>
-            <span className="font-mono font-bold text-success text-sm tabular-nums">
+            <span className="font-bold text-success text-sm timer-digits">
               {formatTime(getElapsedSeconds(timer))}
             </span>
           </div>
