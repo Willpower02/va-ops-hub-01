@@ -15,11 +15,11 @@ export default function ReportsPage() {
   const { data: vas = [] } = useVAs();
   const { data: members = [] } = useTeamMembers();
 
+  const todayStr = new Date().toDateString();
+
   if (!can('viewAnalytics')) {
     return <Navigate to="/tasks" replace />;
   }
-
-  const todayStr = new Date().toDateString();
 
   // Today metrics
   const todayTimers = timers.filter((t: any) => new Date(t.started_at).toDateString() === todayStr);
