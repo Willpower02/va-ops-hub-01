@@ -14,19 +14,23 @@ export default function ReportsPage() {
   const now = Date.now();
   const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-  const weekTimers = timers.filter((t: any) => t.started_at >= weekAgo);
-  const totalWeekSeconds = weekTimers.reduce((s: number, t: any) => s + t.total_seconds, 0);
+  const weekTimers = timers.filter((t: any) => new Date(t.started_at).getTime() >= weekAgo);
+  const totalWeekSeconds = weekTimers.reduce((s: number, t: any) => s + t.duration_seconds, 0);
   const completedTasks = tasks.filter((t: any) => t.status === 'completed');
-  const weekCompleted = completedTasks.filter((t: any) => t.completed_at && new Date(t.completed_at).getTime() >= weekAgo);
+  const weekCompleted = completedTasks.filter((t: any) => t.created_at && new Date(t.created_at).getTime() >= weekAgo);
 
   const avgDuration = completedTasks.length > 0
-    ? timers.filter((t: any) => t.status === 'stopped').reduce((s: number, t: any) => s + t.total_seconds, 0) / completedTasks.length
+    ? timers.filter((t: any) => t.status === 'stopped').reduce((s: number, t: any) => s + t.duration_seconds, 0) / completedTasks.length
     : 0;
 
-  const vaHours = vas.map((va: any) => ({
-    name: `${va.first_name} ${va.last_name}`,
-    seconds: timers.filter((t: any) => t.va_id === va.id).reduce((s: number, t: any) => s + t.total_seconds, 0),
-  })).sort((a: any, b: any) => b.seconds - a.seconds);
+  const vaHours = vas.map((va: any) => {
+    const vaTasks = tasks.filter((t: any) => t.assigned_team_member_id === va.id);
+    const vaTaskIds = vaTasks.map((t: any) => t.id);
+    return {
+      name: va.name,
+      seconds: timers.filter((t: any) => vaTaskIds.includes(t.task_id)).reduce((s: number, t: any) => s + t.duration_seconds, 0),
+    };
+  }).sort((a: any, b: any) => b.seconds - a.seconds);
 
   const topVA = vaHours[0];
 
@@ -34,22 +38,14 @@ export default function ReportsPage() {
     const rows = [['VA', 'Task', 'Duration (s)', 'Status', 'Date']];
     timers.forEach((t: any) => {
       const task = tasks.find((tk: any) => tk.id === t.task_id);
-      const va = members.find((u: any) => u.id === t.va_id);
-      rows.push([
-        va ? `${va.first_name} ${va.last_name}` : '',
-        task?.title || '',
-        String(t.total_seconds),
-        t.status,
-        new Date(t.started_at).toLocaleDateString(),
-      ]);
+      const va = task ? vas.find((v: any) => v.id === task.assigned_team_member_id) : null;
+      rows.push([va?.name || '', task?.title || '', String(t.duration_seconds), t.status, new Date(t.started_at).toLocaleDateString()]);
     });
     const csv = rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `va-tracker-export-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
+    a.href = url; a.download = `va-tracker-export-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
   };
 
   const metrics = [
@@ -64,9 +60,7 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-foreground">Reports</h1>
         {can('exportCsv') && (
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-1" /> Export CSV
-          </Button>
+          <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
         )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

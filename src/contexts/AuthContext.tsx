@@ -3,78 +3,65 @@ import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { ROLE_PERMISSIONS, Role } from '@/lib/types';
 
-interface Profile {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  avatar_url: string | null;
-  organization_id: string | null;
-  is_active: boolean;
-}
-
 interface AuthContextType {
   session: Session | null;
-  profile: Profile | null;
+  userEmail: string | null;
+  userName: string;
   role: Role;
   orgId: string | null;
   loading: boolean;
   can: (action: keyof typeof ROLE_PERMISSIONS['admin']) => boolean;
-  refreshProfile: () => Promise<void>;
+  refreshOrg: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
-  profile: null,
+  userEmail: null,
+  userName: '',
   role: 'viewer',
   orgId: null,
   loading: true,
   can: () => false,
-  refreshProfile: async () => {},
+  refreshOrg: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<Role>('viewer');
+  const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = useCallback(async (userId: string) => {
-    const { data: prof } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    setProfile(prof);
-
-    if (prof?.organization_id) {
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('organization_id', prof.organization_id)
-        .single();
-      setRole((roleData?.role as Role) || 'viewer');
+  const fetchOrgMembership = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('organization_members')
+      .select('organization_id, role')
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setOrgId(data.organization_id);
+      setRole((data.role as Role) || 'viewer');
     } else {
+      setOrgId(null);
       setRole('viewer');
     }
   }, []);
 
-  const refreshProfile = useCallback(async () => {
+  const refreshOrg = useCallback(async () => {
     if (session?.user?.id) {
-      await fetchProfile(session.user.id);
+      await fetchOrgMembership(session.user.id);
     }
-  }, [session?.user?.id, fetchProfile]);
+  }, [session?.user?.id, fetchOrgMembership]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess);
       if (sess?.user) {
-        setTimeout(() => fetchProfile(sess.user.id), 0);
+        setTimeout(() => fetchOrgMembership(sess.user.id), 0);
       } else {
-        setProfile(null);
+        setOrgId(null);
         setRole('viewer');
       }
       setLoading(false);
@@ -83,22 +70,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
       setSession(sess);
       if (sess?.user) {
-        fetchProfile(sess.user.id);
+        fetchOrgMembership(sess.user.id);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+  }, [fetchOrgMembership]);
 
   const can = useCallback((action: keyof typeof ROLE_PERMISSIONS['admin']): boolean => {
     return ROLE_PERMISSIONS[role]?.[action] ?? false;
   }, [role]);
 
-  const orgId = profile?.organization_id || null;
+  const userEmail = session?.user?.email || null;
+  const meta = session?.user?.user_metadata;
+  const userName = meta ? `${meta.first_name || ''} ${meta.last_name || ''}`.trim() : userEmail || '';
 
   return (
-    <AuthContext.Provider value={{ session, profile, role, orgId, loading, can, refreshProfile }}>
+    <AuthContext.Provider value={{ session, userEmail, userName, role, orgId, loading, can, refreshOrg }}>
       {children}
     </AuthContext.Provider>
   );

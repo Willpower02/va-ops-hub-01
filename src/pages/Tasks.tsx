@@ -36,14 +36,14 @@ export default function TasksPage() {
     allTasks.filter((t: any) => {
       if (t.status !== status) return false;
       if (priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
-      if (vaFilter !== 'all' && t.assigned_va_id !== vaFilter) return false;
+      if (vaFilter !== 'all' && t.assigned_team_member_id !== vaFilter) return false;
       return true;
     });
 
   const statuses = ['pending', 'active', 'paused', 'completed'];
 
   const renderTask = (task: any) => {
-    const va = vas.find((v: any) => v.id === task.assigned_va_id);
+    const va = vas.find((v: any) => v.id === task.assigned_team_member_id);
     const timer = timers.find((t: any) => t.task_id === task.id && t.status !== 'stopped');
     const elapsed = timer ? getElapsedSeconds(timer) : 0;
     return (
@@ -52,10 +52,9 @@ export default function TasksPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-medium text-card-foreground">{task.title}</h4>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>{task.priority}</span>
-            {task.category && <Badge variant="outline" className="text-xs">{task.category}</Badge>}
           </div>
           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-            <span>{va ? `${va.first_name} ${va.last_name}` : 'Unassigned'}</span>
+            <span>{va ? va.name : 'Unassigned'}</span>
             {task.due_date && <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>}
           </div>
         </div>
@@ -90,7 +89,7 @@ export default function TasksPage() {
           <SelectTrigger className="w-44"><SelectValue placeholder="Assigned VA" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All VAs</SelectItem>
-            {vas.map((v: any) => <SelectItem key={v.id} value={v.id}>{v.first_name} {v.last_name}</SelectItem>)}
+            {vas.map((v: any) => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -98,9 +97,7 @@ export default function TasksPage() {
       <Tabs defaultValue="pending">
         <TabsList>
           {statuses.map(s => (
-            <TabsTrigger key={s} value={s} className="capitalize">
-              {s} ({filterTasks(s).length})
-            </TabsTrigger>
+            <TabsTrigger key={s} value={s} className="capitalize">{s} ({filterTasks(s).length})</TabsTrigger>
           ))}
         </TabsList>
         {statuses.map(s => (

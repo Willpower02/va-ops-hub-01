@@ -19,8 +19,8 @@ export default function Dashboard() {
   const { data: timers = [] } = useTimers();
   const { data: tasks = [] } = useTasks();
 
-  const filtered = vas.filter(va => {
-    const nameMatch = `${va.first_name} ${va.last_name}`.toLowerCase().includes(search.toLowerCase());
+  const filtered = vas.filter((va: any) => {
+    const nameMatch = va.name.toLowerCase().includes(search.toLowerCase());
     const statusMatch = statusFilter === 'all' || va.status === statusFilter;
     return nameMatch && statusMatch;
   });
@@ -73,7 +73,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((va, i) => (
+          {filtered.map((va: any, i: number) => (
             <VACard key={va.id} va={va} index={i} timers={timers} tasks={tasks} />
           ))}
         </div>

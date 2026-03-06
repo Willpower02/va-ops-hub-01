@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import AuthPage from "./pages/Auth";
@@ -18,7 +18,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { session, profile, loading } = useAuth();
+  const { session, orgId, loading } = useAuth();
 
   if (loading) {
     return (
@@ -29,7 +29,7 @@ function AppRoutes() {
   }
 
   if (!session) return <AuthPage />;
-  if (!profile?.organization_id) return <CreateOrgPage />;
+  if (!orgId) return <CreateOrgPage />;
 
   return (
     <AppLayout>

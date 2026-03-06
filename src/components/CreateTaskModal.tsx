@@ -9,18 +9,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useVAs, useAddTask } from '@/hooks/use-data';
 import { toast } from 'sonner';
 
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  preselectedVaId?: string;
-}
+interface Props { open: boolean; onClose: () => void; preselectedVaId?: string; }
 
 export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [vaId, setVaId] = useState(preselectedVaId || '');
   const [priority, setPriority] = useState('medium');
-  const [category, setCategory] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [startImmediately, setStartImmediately] = useState(false);
   const [error, setError] = useState('');
@@ -35,15 +30,14 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
       await addTask.mutateAsync({
         title: title.trim(),
         description: description.trim(),
-        assigned_va_id: vaId,
+        assigned_team_member_id: vaId,
         priority,
-        category: category.trim(),
         status: startImmediately ? 'active' : 'pending',
         due_date: dueDate || undefined,
         startTimer: startImmediately,
       });
       setTitle(''); setDescription(''); setVaId(preselectedVaId || ''); setPriority('medium');
-      setCategory(''); setDueDate(''); setStartImmediately(false); setError('');
+      setDueDate(''); setStartImmediately(false); setError('');
       toast.success('Task created!');
       onClose();
     } catch (err: any) {
@@ -65,7 +59,7 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
               <Select value={vaId} onValueChange={setVaId}>
                 <SelectTrigger><SelectValue placeholder="Select VA" /></SelectTrigger>
                 <SelectContent>
-                  {vas.map((v: any) => <SelectItem key={v.id} value={v.id}>{v.first_name} {v.last_name}</SelectItem>)}
+                  {vas.map((v: any) => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -82,10 +76,7 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>Category</Label><Input value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. Marketing" /></div>
-            <div><Label>Due Date</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>
-          </div>
+          <div><Label>Due Date</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>
           <div className="flex items-center gap-2">
             <Checkbox id="startTimer" checked={startImmediately} onCheckedChange={(c) => setStartImmediately(c === true)} />
             <Label htmlFor="startTimer" className="cursor-pointer">Start timer immediately</Label>
