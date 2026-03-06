@@ -16,32 +16,26 @@ export type Database = {
     Tables: {
       activity_logs: {
         Row: {
-          action_type: string
+          action: string
           created_at: string
-          entity_id: string
-          entity_type: string
+          details: Json
           id: string
-          metadata: Json
           organization_id: string
           user_id: string | null
         }
         Insert: {
-          action_type: string
+          action: string
           created_at?: string
-          entity_id: string
-          entity_type: string
+          details?: Json
           id?: string
-          metadata?: Json
           organization_id: string
           user_id?: string | null
         }
         Update: {
-          action_type?: string
+          action?: string
           created_at?: string
-          entity_id?: string
-          entity_type?: string
+          details?: Json
           id?: string
-          metadata?: Json
           organization_id?: string
           user_id?: string | null
         }
@@ -55,44 +49,34 @@ export type Database = {
           },
         ]
       }
-      comments: {
+      organization_members: {
         Row: {
-          comment: string
           created_at: string
           id: string
           organization_id: string
-          task_id: string
-          user_id: string | null
+          role: string
+          user_id: string
         }
         Insert: {
-          comment: string
           created_at?: string
           id?: string
           organization_id: string
-          task_id: string
-          user_id?: string | null
+          role?: string
+          user_id: string
         }
         Update: {
-          comment?: string
           created_at?: string
           id?: string
           organization_id?: string
-          task_id?: string
-          user_id?: string | null
+          role?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "comments_organization_id_fkey"
+            foreignKeyName: "organization_members_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "comments_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -102,110 +86,60 @@ export type Database = {
           created_at: string
           id: string
           name: string
-          owner_id: string
+          owner_user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
-          owner_id: string
+          owner_user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
-          owner_id?: string
+          owner_user_id?: string
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          email: string
-          first_name: string
-          id: string
-          is_active: boolean
-          last_name: string
-          organization_id: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          email: string
-          first_name?: string
-          id: string
-          is_active?: boolean
-          last_name?: string
-          organization_id?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          email?: string
-          first_name?: string
-          id?: string
-          is_active?: boolean
-          last_name?: string
-          organization_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tasks: {
         Row: {
-          assigned_va_id: string | null
-          category: string
-          completed_at: string | null
+          assigned_team_member_id: string | null
           created_at: string
-          created_by: string | null
           description: string
           due_date: string | null
           id: string
           organization_id: string
-          priority: Database["public"]["Enums"]["task_priority"]
-          status: Database["public"]["Enums"]["task_status"]
+          priority: string
+          status: string
           title: string
         }
         Insert: {
-          assigned_va_id?: string | null
-          category?: string
-          completed_at?: string | null
+          assigned_team_member_id?: string | null
           created_at?: string
-          created_by?: string | null
           description?: string
           due_date?: string | null
           id?: string
           organization_id: string
-          priority?: Database["public"]["Enums"]["task_priority"]
-          status?: Database["public"]["Enums"]["task_status"]
+          priority?: string
+          status?: string
           title: string
         }
         Update: {
-          assigned_va_id?: string | null
-          category?: string
-          completed_at?: string | null
+          assigned_team_member_id?: string | null
           created_at?: string
-          created_by?: string | null
           description?: string
           due_date?: string | null
           id?: string
           organization_id?: string
-          priority?: Database["public"]["Enums"]["task_priority"]
-          status?: Database["public"]["Enums"]["task_status"]
+          priority?: string
+          status?: string
           title?: string
         }
         Relationships: [
           {
-            foreignKeyName: "tasks_assigned_va_id_fkey"
-            columns: ["assigned_va_id"]
+            foreignKeyName: "tasks_assigned_team_member_id_fkey"
+            columns: ["assigned_team_member_id"]
             isOneToOne: false
             referencedRelation: "team_members"
             referencedColumns: ["id"]
@@ -221,55 +155,36 @@ export type Database = {
       }
       team_members: {
         Row: {
-          assigned_team_lead_id: string | null
           avatar_url: string | null
           created_at: string
           email: string
-          first_name: string
           id: string
-          is_active: boolean
-          last_activity_at: string | null
-          last_name: string
+          name: string
           organization_id: string
-          role: Database["public"]["Enums"]["app_role"]
-          status: Database["public"]["Enums"]["va_status"] | null
+          role: string
+          status: string
         }
         Insert: {
-          assigned_team_lead_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email: string
-          first_name: string
           id?: string
-          is_active?: boolean
-          last_activity_at?: string | null
-          last_name: string
+          name: string
           organization_id: string
-          role?: Database["public"]["Enums"]["app_role"]
-          status?: Database["public"]["Enums"]["va_status"] | null
+          role?: string
+          status?: string
         }
         Update: {
-          assigned_team_lead_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string
-          first_name?: string
           id?: string
-          is_active?: boolean
-          last_activity_at?: string | null
-          last_name?: string
+          name?: string
           organization_id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          status?: Database["public"]["Enums"]["va_status"] | null
+          role?: string
+          status?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "team_members_assigned_team_lead_id_fkey"
-            columns: ["assigned_team_lead_id"]
-            isOneToOne: false
-            referencedRelation: "team_members"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "team_members_organization_id_fkey"
             columns: ["organization_id"]
@@ -281,87 +196,38 @@ export type Database = {
       }
       timers: {
         Row: {
+          created_at: string
+          duration_seconds: number
           id: string
-          organization_id: string
-          paused_at: number | null
-          started_at: number
-          status: Database["public"]["Enums"]["timer_status"]
-          stopped_at: number | null
+          started_at: string
+          status: string
+          stopped_at: string | null
           task_id: string
-          total_seconds: number
-          va_id: string
         }
         Insert: {
+          created_at?: string
+          duration_seconds?: number
           id?: string
-          organization_id: string
-          paused_at?: number | null
-          started_at: number
-          status?: Database["public"]["Enums"]["timer_status"]
-          stopped_at?: number | null
+          started_at?: string
+          status?: string
+          stopped_at?: string | null
           task_id: string
-          total_seconds?: number
-          va_id: string
         }
         Update: {
+          created_at?: string
+          duration_seconds?: number
           id?: string
-          organization_id?: string
-          paused_at?: number | null
-          started_at?: number
-          status?: Database["public"]["Enums"]["timer_status"]
-          stopped_at?: number | null
+          started_at?: string
+          status?: string
+          stopped_at?: string | null
           task_id?: string
-          total_seconds?: number
-          va_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "timers_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "timers_task_id_fkey"
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "timers_va_id_fkey"
-            columns: ["va_id"]
-            isOneToOne: false
-            referencedRelation: "team_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_roles: {
-        Row: {
-          id: string
-          organization_id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          organization_id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          id?: string
-          organization_id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -372,20 +238,9 @@ export type Database = {
     }
     Functions: {
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
     }
     Enums: {
-      app_role: "admin" | "operations_manager" | "team_lead" | "va" | "viewer"
-      task_priority: "low" | "medium" | "high" | "urgent"
-      task_status: "pending" | "active" | "paused" | "completed"
-      timer_status: "running" | "paused" | "stopped"
-      va_status: "active" | "paused" | "idle" | "offline"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -512,12 +367,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "operations_manager", "team_lead", "va", "viewer"],
-      task_priority: ["low", "medium", "high", "urgent"],
-      task_status: ["pending", "active", "paused", "completed"],
-      timer_status: ["running", "paused", "stopped"],
-      va_status: ["active", "paused", "idle", "offline"],
-    },
+    Enums: {},
   },
 } as const
