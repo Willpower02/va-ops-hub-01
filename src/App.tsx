@@ -18,7 +18,18 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { session, orgId, role, loading, authError } = useAuth();
+  const { session, profile, orgId, role, loading, authError } = useAuth();
+
+  console.log('[Router] state:', {
+    hasSession: !!session,
+    userId: session?.user?.id ?? null,
+    email: session?.user?.email ?? null,
+    profile: profile ? { id: profile.id, email: profile.email } : null,
+    orgId,
+    role,
+    loading,
+    authError,
+  });
 
   // 1. Still loading — show spinner
   if (loading) {
@@ -36,13 +47,13 @@ function AppRoutes() {
 
   // 2. No session → auth page
   if (!session) {
-    console.log('[Router] no session — showing auth page');
+    console.log('[Router] → /auth | reason: no active session');
     return <AuthPage />;
   }
 
   // 3. Session exists but there was a profile/data error → show error, NOT login
   if (authError) {
-    console.log('[Router] session exists but auth error:', authError);
+    console.log('[Router] → error screen | reason: profile/data load failed —', authError);
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 space-y-4">
@@ -56,13 +67,13 @@ function AppRoutes() {
 
   // 4. Logged in but no org → create org page (do NOT redirect to auth!)
   if (!orgId) {
-    console.log('[Router] session exists, no organization — showing create organization');
+    console.log('[Router] → /create-organization | reason: user has no organization');
     return <CreateOrgPage />;
   }
 
   // 5. Fully authenticated with org → dashboard routes
   const homeRoute = role === 'va' ? '/tasks' : '/';
-  console.log('[Router] redirecting to dashboard — role:', role, 'home:', homeRoute);
+  console.log('[Router] → /dashboard | reason: authenticated with org | role:', role, '| home:', homeRoute);
 
   return (
     <AppLayout>
