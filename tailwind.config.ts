@@ -92,6 +92,10 @@ export default {
           "0%, 100%": { boxShadow: "0 0 12px -3px hsla(217, 91%, 60%, 0.3)" },
           "50%": { boxShadow: "0 0 20px -3px hsla(217, 91%, 60%, 0.5)" },
         },
+        "fade-in": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
