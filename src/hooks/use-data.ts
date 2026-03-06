@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   fetchTeamMembers, fetchVAs, fetchTeamMember, fetchTasks, fetchTimers,
-  addTeamMember, addTask, logActivity,
+  fetchActivityLogs, addTeamMember, addTask, logActivity,
   startTimerOp, pauseTimerOp, stopTimerOp,
 } from '@/lib/store';
 
@@ -67,6 +67,16 @@ export function useTimers() {
     queryKey: ['timers', orgId],
     queryFn: () => fetchTimers(orgId!),
     enabled: !!orgId,
+  });
+}
+
+export function useActivityLogs() {
+  const { orgId } = useAuth();
+  return useQuery({
+    queryKey: ['activity_logs', orgId],
+    queryFn: () => fetchActivityLogs(orgId!),
+    enabled: !!orgId,
+    refetchInterval: 30000,
   });
 }
 
