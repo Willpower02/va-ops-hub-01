@@ -3,8 +3,17 @@ import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { ROLE_PERMISSIONS, Role } from '@/lib/types';
 
+interface Profile {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+}
+
 interface AuthContextType {
   session: Session | null;
+  profile: Profile | null;
   userEmail: string | null;
   userName: string;
   role: Role | null;
@@ -16,6 +25,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
+  profile: null,
   userEmail: null,
   userName: '',
   role: null,
@@ -29,27 +39,60 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<Role | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const pendingFetch = useRef(0);
 
-  const fetchOrgMembership = useCallback(async (userId: string) => {
+  const fetchUserData = useCallback(async (userId: string) => {
     const fetchId = ++pendingFetch.current;
     try {
-      const { data } = await supabase
-        .from('organization_members')
-        .select('organization_id, role')
-        .eq('user_id', userId)
-        .limit(1)
-        .maybeSingle();
+      // Fetch profile and org membership in parallel
+      const [profileResult, orgResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, email, first_name, last_name, avatar_url')
+          .eq('id', userId)
+          .maybeSingle(),
+        supabase
+          .from('organization_members')
+          .select('organization_id, role')
+          .eq('user_id', userId)
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
-      // Only apply if this is still the latest fetch
       if (fetchId !== pendingFetch.current) return;
 
-      if (data) {
-        setOrgId(data.organization_id);
-        setRole((data.role as Role) || null);
+      // Handle profile — try to self-heal if missing
+      if (profileResult.data) {
+        setProfile(profileResult.data as Profile);
+      } else {
+        // Profile missing — attempt to create it
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && fetchId === pendingFetch.current) {
+          const { data: newProfile } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              email: user.email || '',
+              first_name: user.user_metadata?.first_name || '',
+              last_name: user.user_metadata?.last_name || '',
+            })
+            .select('id, email, first_name, last_name, avatar_url')
+            .maybeSingle();
+          if (fetchId === pendingFetch.current) {
+            setProfile(newProfile as Profile | null);
+          }
+        }
+      }
+
+      if (fetchId !== pendingFetch.current) return;
+
+      if (orgResult.data) {
+        setOrgId(orgResult.data.organization_id);
+        setRole((orgResult.data.role as Role) || null);
       } else {
         setOrgId(null);
         setRole(null);
@@ -63,31 +106,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshOrg = useCallback(async () => {
     if (session?.user?.id) {
-      await fetchOrgMembership(session.user.id);
+      await fetchUserData(session.user.id);
     }
-  }, [session?.user?.id, fetchOrgMembership]);
+  }, [session?.user?.id, fetchUserData]);
 
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session first
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
       if (!mounted) return;
       setSession(sess);
       if (sess?.user) {
-        fetchOrgMembership(sess.user.id);
+        fetchUserData(sess.user.id);
       } else {
         setLoading(false);
       }
     });
 
-    // Then listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
       if (!mounted) return;
       setSession(sess);
       if (sess?.user) {
-        fetchOrgMembership(sess.user.id);
+        fetchUserData(sess.user.id);
       } else {
+        setProfile(null);
         setOrgId(null);
         setRole(null);
         setLoading(false);
@@ -98,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchOrgMembership]);
+  }, [fetchUserData]);
 
   const can = useCallback((action: keyof typeof ROLE_PERMISSIONS['admin']): boolean => {
     if (!role) return false;
@@ -106,11 +148,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [role]);
 
   const userEmail = session?.user?.email || null;
-  const meta = session?.user?.user_metadata;
-  const userName = meta ? `${meta.first_name || ''} ${meta.last_name || ''}`.trim() : userEmail || '';
+  const userName = profile
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email
+    : userEmail || '';
 
   return (
-    <AuthContext.Provider value={{ session, userEmail, userName, role, orgId, loading, can, refreshOrg }}>
+    <AuthContext.Provider value={{ session, profile, userEmail, userName, role, orgId, loading, can, refreshOrg }}>
       {children}
     </AuthContext.Provider>
   );
