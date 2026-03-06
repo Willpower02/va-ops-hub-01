@@ -20,6 +20,7 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   const { session, orgId, role, loading, authError } = useAuth();
 
+  // 1. Still loading — show spinner
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -33,35 +34,40 @@ function AppRoutes() {
     );
   }
 
+  // 2. No session → auth page
   if (!session) {
-    console.log('[Auth] no session found');
+    console.log('[Router] no session — showing auth page');
     return <AuthPage />;
   }
 
-  console.log('[Auth] session found', session.user.id);
-
+  // 3. Session exists but there was a profile/data error → show error, NOT login
   if (authError) {
+    console.log('[Router] session exists but auth error:', authError);
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="w-full max-w-md rounded-xl border border-border bg-card p-6">
-          <h1 className="text-lg font-semibold text-foreground mb-2">Login setup error</h1>
+        <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 space-y-4">
+          <h1 className="text-lg font-semibold text-foreground">Account Setup Error</h1>
           <p className="text-sm text-muted-foreground">{authError}</p>
+          <p className="text-xs text-muted-foreground">You are signed in as {session.user.email}. This is not a login issue — your profile data could not be loaded.</p>
         </div>
       </div>
     );
   }
 
-  if (!orgId) return <CreateOrgPage />;
+  // 4. Logged in but no org → create org page (do NOT redirect to auth!)
+  if (!orgId) {
+    console.log('[Router] session exists, no organization — showing create organization');
+    return <CreateOrgPage />;
+  }
 
-  const homeRoute = role === 'va' ? '/va-dashboard' : '/dashboard';
-  console.log('[Auth] redirecting to dashboard', homeRoute);
+  // 5. Fully authenticated with org → dashboard routes
+  const homeRoute = role === 'va' ? '/tasks' : '/';
+  console.log('[Router] redirecting to dashboard — role:', role, 'home:', homeRoute);
 
   return (
     <AppLayout>
       <Routes>
-        <Route path="/" element={<Navigate to={homeRoute} replace />} />
-        <Route path="/dashboard" element={role === 'va' ? <Navigate to="/va-dashboard" replace /> : <Dashboard />} />
-        <Route path="/va-dashboard" element={role === 'va' ? <TasksPage /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/" element={role === 'va' ? <Navigate to="/tasks" replace /> : <Dashboard />} />
         <Route path="/va/:id" element={<VADetail />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/team" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <TeamPage />} />
