@@ -237,6 +237,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_organization: { Args: { _name: string }; Returns: string }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
