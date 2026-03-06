@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { User, getElapsedSeconds, getRunningTimerForVA, getTasks, getTimers, formatTime, getTodayTotalForVA } from '@/lib/store';
+import { User } from '@/lib/types';
+import { getElapsedSeconds, getRunningTimerForVA, getTasks, getTimers, formatTime, getTodayTotalForVA } from '@/lib/store';
 import { useNavigate } from 'react-router-dom';
 
 const STATUS_COLORS: Record<string, string> = {

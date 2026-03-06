@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { TimerRecord, getElapsedSeconds } from '@/lib/store';
+import { TimerRecord } from '@/lib/types';
+import { getElapsedSeconds } from '@/lib/store';
 
 export function useTimerTick(timer: TimerRecord | undefined) {
   const [elapsed, setElapsed] = useState(0);
