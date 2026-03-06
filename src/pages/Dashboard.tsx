@@ -11,6 +11,7 @@ import { AddMemberModal } from '@/components/AddMemberModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useVAs, useTimers, useTasks, useTeamMembers } from '@/hooks/use-data';
+import { useIdleDetection } from '@/hooks/use-idle-detection';
 import { Navigate } from 'react-router-dom';
 
 export default function Dashboard() {
