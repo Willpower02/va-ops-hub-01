@@ -92,6 +92,7 @@ export function useAddTeamMember() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['team_members'] });
       qc.invalidateQueries({ queryKey: ['vas'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
     },
   });
 }
@@ -114,6 +115,7 @@ export function useAddTask() {
       qc.invalidateQueries({ queryKey: ['timers'] });
       qc.invalidateQueries({ queryKey: ['vas'] });
       qc.invalidateQueries({ queryKey: ['team_members'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
     },
   });
 }
@@ -122,11 +124,12 @@ export function useTimerControls() {
   const qc = useQueryClient();
   const { orgId, session } = useAuth();
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ['tasks'] });
-    qc.invalidateQueries({ queryKey: ['timers'] });
-    qc.invalidateQueries({ queryKey: ['vas'] });
-    qc.invalidateQueries({ queryKey: ['team_members'] });
-  };
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timers'] });
+      qc.invalidateQueries({ queryKey: ['vas'] });
+      qc.invalidateQueries({ queryKey: ['team_members'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
+    };
   const start = useMutation({
     mutationFn: ({ taskId, teamMemberId }: { taskId: string; teamMemberId: string }) =>
       startTimerOp(taskId, teamMemberId, orgId!, session!.user.id),
