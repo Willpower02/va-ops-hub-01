@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   fetchTeamMembers, fetchVAs, fetchTeamMember, fetchTasks, fetchTimers,
-  addTeamMember, addTask, logActivity,
+  fetchActivityLogs, addTeamMember, addTask, logActivity,
   startTimerOp, pauseTimerOp, stopTimerOp,
 } from '@/lib/store';
 
@@ -70,6 +70,16 @@ export function useTimers() {
   });
 }
 
+export function useActivityLogs() {
+  const { orgId } = useAuth();
+  return useQuery({
+    queryKey: ['activity_logs', orgId],
+    queryFn: () => fetchActivityLogs(orgId!),
+    enabled: !!orgId,
+    refetchInterval: 30000,
+  });
+}
+
 export function useAddTeamMember() {
   const qc = useQueryClient();
   const { orgId, session } = useAuth();
@@ -82,6 +92,7 @@ export function useAddTeamMember() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['team_members'] });
       qc.invalidateQueries({ queryKey: ['vas'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
     },
   });
 }
@@ -104,6 +115,7 @@ export function useAddTask() {
       qc.invalidateQueries({ queryKey: ['timers'] });
       qc.invalidateQueries({ queryKey: ['vas'] });
       qc.invalidateQueries({ queryKey: ['team_members'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
     },
   });
 }
@@ -112,11 +124,12 @@ export function useTimerControls() {
   const qc = useQueryClient();
   const { orgId, session } = useAuth();
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ['tasks'] });
-    qc.invalidateQueries({ queryKey: ['timers'] });
-    qc.invalidateQueries({ queryKey: ['vas'] });
-    qc.invalidateQueries({ queryKey: ['team_members'] });
-  };
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timers'] });
+      qc.invalidateQueries({ queryKey: ['vas'] });
+      qc.invalidateQueries({ queryKey: ['team_members'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
+    };
   const start = useMutation({
     mutationFn: ({ taskId, teamMemberId }: { taskId: string; teamMemberId: string }) =>
       startTimerOp(taskId, teamMemberId, orgId!, session!.user.id),

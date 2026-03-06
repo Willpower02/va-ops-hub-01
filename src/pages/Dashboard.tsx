@@ -6,6 +6,7 @@ import { VACard } from '@/components/VACard';
 import { DashboardStats } from '@/components/DashboardStats';
 import { WeeklySummary } from '@/components/WeeklySummary';
 import { ActiveTasksBanner } from '@/components/ActiveTasksBanner';
+import { ActivityFeed } from '@/components/ActivityFeed';
 import { AddMemberModal } from '@/components/AddMemberModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,7 +76,11 @@ export default function Dashboard() {
 
       <DashboardStats vas={allMembers} tasks={tasks} timers={timers} />
       <ActiveTasksBanner tasks={tasks} timers={timers} vas={allMembers} />
-      <WeeklySummary timers={timers} tasks={tasks} />
+      {/* Weekly summary + Activity feed side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <WeeklySummary timers={timers} tasks={tasks} />
+        <ActivityFeed />
+      </div>
 
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Virtual Assistants</h2>

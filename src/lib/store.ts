@@ -59,6 +59,17 @@ export const fetchTimers = async (orgId: string) => {
   return data || [];
 };
 
+export const fetchActivityLogs = async (orgId: string) => {
+  const { data, error } = await supabase
+    .from('activity_logs')
+    .select('*')
+    .eq('organization_id', orgId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) throw error;
+  return data || [];
+};
+
 // ---- Mutations ----
 
 export const addTeamMember = async (member: {
