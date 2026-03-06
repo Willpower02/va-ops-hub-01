@@ -72,18 +72,19 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log("[invite-member] Inviting:", email, "role:", role || "va");
+
     // Send invite via Supabase Auth
     const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: { name, organization_id: orgData, team_role: role || "va" },
+      redirectTo: `${req.headers.get("origin") || supabaseUrl}`,
     });
 
     if (inviteError) {
+      console.log("[invite-member] Invite error:", inviteError.message);
       // If user already exists in auth, that's ok - still create team member
       if (!inviteError.message?.includes("already been registered")) {
-        return new Response(JSON.stringify({ error: inviteError.message }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return json({ error: "Auth invite failed: " + inviteError.message }, 400);
       }
     }
 
@@ -92,8 +93,8 @@ Deno.serve(async (req) => {
       .from("team_members")
       .insert({
         organization_id: orgData,
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
         role: role || "va",
         status: "offline",
         invite_status: "pending",
@@ -102,11 +103,11 @@ Deno.serve(async (req) => {
       .single();
 
     if (memberError) {
-      return new Response(JSON.stringify({ error: memberError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.log("[invite-member] Insert error:", memberError.message);
+      return json({ error: "Failed to create team member: " + memberError.message }, 500);
     }
+
+    console.log("[invite-member] Member created:", member.id);
 
     // Log activity
     await adminClient.from("activity_logs").insert({
@@ -116,14 +117,9 @@ Deno.serve(async (req) => {
       details: { name, email },
     });
 
-    return new Response(JSON.stringify({ member }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ member });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("[invite-member] Unexpected error:", err);
+    return json({ error: err.message || "Unexpected server error" }, 500);
   }
 });
