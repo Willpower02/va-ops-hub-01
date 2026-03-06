@@ -97,6 +97,39 @@ export function useAddTeamMember() {
   });
 }
 
+export function useInviteTeamMember() {
+  const qc = useQueryClient();
+  const { session } = useAuth();
+  return useMutation({
+    mutationFn: async (member: { name: string; email: string; role: string }) => {
+      const { data, error } = await supabase.functions.invoke('invite-member', {
+        body: member,
+      });
+      if (error) throw new Error(error.message || 'Failed to send invitation');
+      if (data?.error) throw new Error(data.error);
+      return data.member;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['team_members'] });
+      qc.invalidateQueries({ queryKey: ['vas'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
+    },
+  });
+}
+
+export function useResendInvite() {
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const { data, error } = await supabase.functions.invoke('resend-invite', {
+        body: { email },
+      });
+      if (error) throw new Error(error.message || 'Failed to resend invitation');
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+  });
+}
+
 export function useAddTask() {
   const qc = useQueryClient();
   const { orgId, session } = useAuth();
