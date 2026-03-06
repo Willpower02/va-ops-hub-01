@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { ROLE_PERMISSIONS, Role } from '@/lib/types';
@@ -32,20 +32,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<Role | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const pendingFetch = useRef(0);
 
   const fetchOrgMembership = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('organization_members')
-      .select('organization_id, role')
-      .eq('user_id', userId)
-      .limit(1)
-      .maybeSingle();
-    if (data) {
-      setOrgId(data.organization_id);
-      setRole((data.role as Role) || null);
-    } else {
-      setOrgId(null);
-      setRole(null);
+    const fetchId = ++pendingFetch.current;
+    try {
+      const { data } = await supabase
+        .from('organization_members')
+        .select('organization_id, role')
+        .eq('user_id', userId)
+        .limit(1)
+        .maybeSingle();
+
+      // Only apply if this is still the latest fetch
+      if (fetchId !== pendingFetch.current) return;
+
+      if (data) {
+        setOrgId(data.organization_id);
+        setRole((data.role as Role) || null);
+      } else {
+        setOrgId(null);
+        setRole(null);
+      }
+    } finally {
+      if (fetchId === pendingFetch.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -56,26 +68,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [session?.user?.id, fetchOrgMembership]);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
-      setSession(sess);
-      if (sess?.user) {
-        setTimeout(() => fetchOrgMembership(sess.user.id), 0);
-      } else {
-        setOrgId(null);
-        setRole(null);
-      }
-      setLoading(false);
-    });
+    let mounted = true;
 
+    // Get initial session first
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      if (!mounted) return;
       setSession(sess);
       if (sess?.user) {
         fetchOrgMembership(sess.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Then listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (!mounted) return;
+      setSession(sess);
+      if (sess?.user) {
+        fetchOrgMembership(sess.user.id);
+      } else {
+        setOrgId(null);
+        setRole(null);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchOrgMembership]);
 
   const can = useCallback((action: keyof typeof ROLE_PERMISSIONS['admin']): boolean => {

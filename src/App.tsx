@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import AuthPage from "./pages/Auth";
@@ -18,12 +18,17 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { session, orgId, loading } = useAuth();
+  const { session, orgId, role, loading } = useAuth();
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center animate-pulse">
+            <span className="text-primary font-bold">VA</span>
+          </div>
+          <p className="text-muted-foreground text-sm">Loading your workspace...</p>
+        </div>
       </div>
     );
   }
@@ -31,14 +36,17 @@ function AppRoutes() {
   if (!session) return <AuthPage />;
   if (!orgId) return <CreateOrgPage />;
 
+  // Determine the default home route based on role
+  const homeRoute = role === 'va' ? '/tasks' : '/';
+
   return (
     <AppLayout>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={role === 'va' ? <Navigate to="/tasks" replace /> : <Dashboard />} />
         <Route path="/va/:id" element={<VADetail />} />
         <Route path="/tasks" element={<TasksPage />} />
-        <Route path="/team" element={<TeamPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/team" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <TeamPage />} />
+        <Route path="/reports" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <ReportsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
