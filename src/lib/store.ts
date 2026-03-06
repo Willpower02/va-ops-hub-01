@@ -77,7 +77,7 @@ export const addTeamMember = async (member: {
 }) => {
   const { data, error } = await supabase
     .from('team_members')
-    .insert(member)
+    .insert([member] as any)
     .select()
     .single();
   if (error) throw error;
@@ -105,7 +105,7 @@ export const addTask = async (task: {
 }) => {
   const { data, error } = await supabase
     .from('tasks')
-    .insert(task)
+    .insert([task] as any)
     .select()
     .single();
   if (error) throw error;
@@ -130,7 +130,7 @@ export const addTimer = async (timer: {
 }) => {
   const { data, error } = await supabase
     .from('timers')
-    .insert(timer)
+    .insert([timer] as any)
     .select()
     .single();
   if (error) throw error;
@@ -168,7 +168,7 @@ export const logActivity = async (log: {
   metadata: Record<string, unknown>;
   organization_id: string;
 }) => {
-  await supabase.from('activity_logs').insert(log);
+  await supabase.from('activity_logs').insert([log] as any);
 };
 
 // ---- Timer operations ----
