@@ -18,7 +18,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { session, orgId, role, loading } = useAuth();
+  const { session, orgId, role, loading, authError } = useAuth();
 
   if (loading) {
     return (
@@ -34,22 +34,34 @@ function AppRoutes() {
   }
 
   if (!session) {
-    console.log('[Auth] no session found — showing login');
+    console.log('[Auth] no session found');
     return <AuthPage />;
   }
 
-  console.log('[Auth] session found — user:', session.user.email);
+  console.log('[Auth] session found', session.user.id);
+
+  if (authError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="w-full max-w-md rounded-xl border border-border bg-card p-6">
+          <h1 className="text-lg font-semibold text-foreground mb-2">Login setup error</h1>
+          <p className="text-sm text-muted-foreground">{authError}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!orgId) return <CreateOrgPage />;
 
-  // Determine the default home route based on role
-  const homeRoute = role === 'va' ? '/tasks' : '/';
-  console.log('[Auth] redirecting to dashboard — role:', role, 'route:', homeRoute);
+  const homeRoute = role === 'va' ? '/va-dashboard' : '/dashboard';
+  console.log('[Auth] redirecting to dashboard', homeRoute);
 
   return (
     <AppLayout>
       <Routes>
-        <Route path="/" element={role === 'va' ? <Navigate to="/tasks" replace /> : <Dashboard />} />
+        <Route path="/" element={<Navigate to={homeRoute} replace />} />
+        <Route path="/dashboard" element={role === 'va' ? <Navigate to="/va-dashboard" replace /> : <Dashboard />} />
+        <Route path="/va-dashboard" element={role === 'va' ? <TasksPage /> : <Navigate to="/dashboard" replace />} />
         <Route path="/va/:id" element={<VADetail />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/team" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <TeamPage />} />
