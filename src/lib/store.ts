@@ -153,7 +153,7 @@ export const addComment = async (comment: {
 }) => {
   const { data, error } = await supabase
     .from('comments')
-    .insert(comment)
+    .insert([comment] as any)
     .select()
     .single();
   if (error) throw error;
