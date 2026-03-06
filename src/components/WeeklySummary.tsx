@@ -35,11 +35,11 @@ export function WeeklySummary({ timers, tasks }: WeeklySummaryProps) {
   const totalCompleted = weekData.reduce((s, d) => s + d.completed, 0);
 
   return (
-    <div className="bg-card rounded-xl border p-5">
+    <div className="glass-card rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-card-foreground">Weekly Productivity</h3>
+        <h3 className="font-semibold text-foreground">Weekly Productivity</h3>
         <div className="flex gap-4 text-xs text-muted-foreground">
-          <span>{formatTime(totalWeek)} tracked</span>
+          <span className="timer-digits">{formatTime(totalWeek)} tracked</span>
           <span>{totalCompleted} tasks done</span>
         </div>
       </div>
@@ -49,12 +49,12 @@ export function WeeklySummary({ timers, tasks }: WeeklySummaryProps) {
           const isToday = day.label === 'Today';
           return (
             <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-[10px] text-muted-foreground timer-digits">
                 {day.seconds > 0 ? formatTime(day.seconds).slice(0, 5) : '—'}
               </span>
               <div className="w-full flex items-end" style={{ height: '60px' }}>
                 <div
-                  className={`w-full rounded-t-md transition-all ${isToday ? 'bg-primary' : 'bg-primary/30'}`}
+                  className={`w-full rounded-t-md transition-all ${isToday ? 'bg-primary glow-border' : 'bg-primary/20'}`}
                   style={{ height: `${Math.max(pct, 4)}%` }}
                 />
               </div>

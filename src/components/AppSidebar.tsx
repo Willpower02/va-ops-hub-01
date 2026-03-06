@@ -25,12 +25,12 @@ export function AppSidebar() {
   const navItems = allNavItems.filter(item => !item.permission || can(item.permission));
 
   return (
-    <Sidebar collapsible="icon" className="border-r-0">
+    <Sidebar collapsible="icon" className="border-r border-border/30">
       <div className="px-4 py-5 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-          <span className="text-sidebar-primary-foreground font-bold text-sm">VA</span>
+        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center glow-border">
+          <span className="text-primary font-bold text-sm">VA</span>
         </div>
-        {!collapsed && <span className="font-bold text-sidebar-accent-foreground text-lg tracking-tight">VA Tracker</span>}
+        {!collapsed && <span className="font-bold text-foreground text-lg tracking-tight">VA Tracker</span>}
       </div>
       <SidebarContent>
         <SidebarGroup>
@@ -39,7 +39,12 @@ export function AppSidebar() {
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === '/'} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors" activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold">
+                    <NavLink
+                      to={item.url}
+                      end={item.url === '/'}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200"
+                      activeClassName="bg-primary/10 text-primary font-semibold glow-border"
+                    >
                       <item.icon className="h-5 w-5 shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -50,19 +55,19 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-3">
+      <SidebarFooter className="p-3 border-t border-border/30">
         <div className="flex items-center gap-2 w-full px-2 py-2">
-          <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground text-xs font-bold shrink-0">
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
             {initials}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{userName}</p>
-              <p className="text-xs text-sidebar-foreground truncate capitalize">{role?.replace('_', ' ')}</p>
+              <p className="text-sm font-medium text-foreground truncate">{userName}</p>
+              <p className="text-xs text-muted-foreground truncate capitalize">{role?.replace('_', ' ')}</p>
             </div>
           )}
         </div>
-        <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()} className="w-full justify-start text-sidebar-foreground hover:text-sidebar-accent-foreground">
+        <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()} className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-secondary">
           <LogOut className="h-4 w-4 mr-2" />{!collapsed && 'Sign Out'}
         </Button>
       </SidebarFooter>

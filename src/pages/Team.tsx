@@ -8,8 +8,8 @@ import { useTeamMembers } from '@/hooks/use-data';
 import { Navigate } from 'react-router-dom';
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: 'bg-primary text-primary-foreground',
-  team_lead: 'bg-accent text-accent-foreground',
+  admin: 'bg-primary/20 text-primary',
+  team_lead: 'bg-success/20 text-success',
   va: 'bg-success/10 text-success',
 };
 
@@ -27,7 +27,7 @@ export default function TeamPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-foreground">Team</h1>
         {can('addMembers') && (
-          <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Team Member</Button>
+          <Button onClick={() => setAddOpen(true)} className="bg-primary hover:bg-primary/90 glow-border"><Plus className="h-4 w-4 mr-1" /> Add Team Member</Button>
         )}
       </div>
 
@@ -35,18 +35,18 @@ export default function TeamPage() {
         {users.map((u: any) => {
           const initials = u.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
           return (
-            <div key={u.id} className="bg-card rounded-xl border p-5">
+            <div key={u.id} className="glass-card rounded-2xl p-5">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0">
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-card-foreground">{u.name}</h3>
+                  <h3 className="font-semibold text-foreground">{u.name}</h3>
                   <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge className={`${ROLE_COLORS[u.role] || 'bg-muted text-muted-foreground'} text-xs capitalize`}>{u.role.replace('_', ' ')}</Badge>
+                    <Badge className={`${ROLE_COLORS[u.role] || 'bg-muted text-muted-foreground'} text-xs capitalize border-0`}>{u.role.replace('_', ' ')}</Badge>
                     <span className={`text-xs ${u.status !== 'offline' ? 'text-success' : 'text-muted-foreground'}`}>
-                      {u.status !== 'offline' ? 'Active' : 'Inactive'}
+                      {u.status !== 'offline' ? '● Active' : '○ Inactive'}
                     </span>
                   </div>
                 </div>

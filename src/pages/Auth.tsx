@@ -40,39 +40,39 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, hsl(216 55% 8%) 0%, hsl(215 45% 14%) 50%, hsl(216 40% 10%) 100%)' }}>
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold">VA</span>
+          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center glow-border">
+            <span className="text-primary font-bold">VA</span>
           </div>
           <span className="font-bold text-foreground text-2xl tracking-tight">VA Tracker</span>
         </div>
 
-        <div className="bg-card rounded-xl border p-6">
+        <div className="glass-card rounded-2xl p-6">
           <h2 className="text-xl font-bold text-foreground mb-4">{isLogin ? 'Sign In' : 'Create Account'}</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>First Name</Label>
-                  <Input value={firstName} onChange={e => setFirstName(e.target.value)} required />
+                  <Label className="text-muted-foreground">First Name</Label>
+                  <Input value={firstName} onChange={e => setFirstName(e.target.value)} required className="bg-secondary/50 border-border/50" />
                 </div>
                 <div>
-                  <Label>Last Name</Label>
-                  <Input value={lastName} onChange={e => setLastName(e.target.value)} required />
+                  <Label className="text-muted-foreground">Last Name</Label>
+                  <Input value={lastName} onChange={e => setLastName(e.target.value)} required className="bg-secondary/50 border-border/50" />
                 </div>
               </div>
             )}
             <div>
-              <Label>Email</Label>
-              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <Label className="text-muted-foreground">Email</Label>
+              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="bg-secondary/50 border-border/50" />
             </div>
             <div>
-              <Label>Password</Label>
-              <Input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+              <Label className="text-muted-foreground">Password</Label>
+              <Input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="bg-secondary/50 border-border/50" />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 glow-border" disabled={loading}>
               {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
             </Button>
           </form>
