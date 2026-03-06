@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Clock, AlertCircle } from 'lucide-react';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -7,6 +8,13 @@ const STATUS_COLORS: Record<string, string> = {
   paused: 'bg-warning',
   idle: 'bg-muted-foreground/40',
   offline: 'bg-foreground/30',
+};
+
+const STATUS_BORDER: Record<string, string> = {
+  active: 'border-success/30',
+  paused: 'border-warning/30',
+  idle: 'border-border',
+  offline: 'border-border',
 };
 
 const AVATAR_COLORS = [
@@ -27,6 +35,7 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
   const vaTasks = tasks.filter((t: any) => t.assigned_team_member_id === va.id);
   const activeTask = vaTasks.find((t: any) => t.status === 'active');
   const pendingCount = vaTasks.filter((t: any) => t.status === 'pending').length;
+  const completedCount = vaTasks.filter((t: any) => t.status === 'completed').length;
 
   const activeTaskTimer = activeTask
     ? timers.find((t: any) => t.task_id === activeTask.id && t.status === 'running')
@@ -49,30 +58,41 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
   }, [activeTaskTimer?.id, activeTaskTimer?.status, activeTaskTimer?.started_at]);
 
   const initials = va.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+  const status = va.status || 'offline';
+  const isIdle = status === 'idle' || status === 'offline';
 
   return (
     <div
       onClick={() => navigate(`/va/${va.id}`)}
-      className="bg-card rounded-xl border p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 group"
+      className={`bg-card rounded-xl border-2 p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 group ${STATUS_BORDER[status]} ${isIdle ? 'opacity-75' : ''}`}
     >
       <div className="flex items-start gap-3">
-        <div className={`w-10 h-10 rounded-full ${AVATAR_COLORS[index % AVATAR_COLORS.length]} flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0`}>
-          {initials}
+        <div className="relative">
+          <div className={`w-10 h-10 rounded-full ${AVATAR_COLORS[index % AVATAR_COLORS.length]} flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0`}>
+            {initials}
+          </div>
+          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${STATUS_COLORS[status]} ${status === 'active' ? 'animate-pulse' : ''}`} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-card-foreground truncate">{va.name}</h3>
-            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${STATUS_COLORS[va.status || 'offline']} ${va.status === 'active' ? 'animate-pulse-dot' : ''}`} />
-          </div>
-          <p className="text-xs text-muted-foreground capitalize mt-0.5">{va.status || 'offline'}</p>
+          <h3 className="font-semibold text-card-foreground truncate">{va.name}</h3>
+          <p className="text-xs text-muted-foreground capitalize mt-0.5">{status}</p>
         </div>
+        {isIdle && pendingCount === 0 && (
+          <div className="shrink-0" title="No tasks assigned">
+            <AlertCircle className="h-4 w-4 text-warning" />
+          </div>
+        )}
       </div>
 
       <div className="mt-4 space-y-2">
         {activeTask ? (
-          <div className="bg-success/10 rounded-lg px-3 py-2">
+          <div className="bg-success/10 border border-success/20 rounded-lg px-3 py-2">
             <p className="text-xs font-medium text-success truncate">{activeTask.title}</p>
-            <p className="text-lg font-mono font-bold text-success">{formatTime(elapsed)}</p>
+            <p className="text-lg font-mono font-bold text-success tabular-nums">{formatTime(elapsed)}</p>
+          </div>
+        ) : isIdle && pendingCount > 0 ? (
+          <div className="bg-warning/10 border border-warning/20 rounded-lg px-3 py-2">
+            <p className="text-xs font-medium text-warning">Idle — {pendingCount} task{pendingCount !== 1 ? 's' : ''} waiting</p>
           </div>
         ) : (
           <div className="bg-muted rounded-lg px-3 py-2">
@@ -81,8 +101,14 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
         )}
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>{pendingCount} pending task{pendingCount !== 1 ? 's' : ''}</span>
-          <span>Today: {formatTime(todayTotal)}</span>
+          <div className="flex items-center gap-3">
+            <span>{pendingCount} pending</span>
+            <span>{completedCount} done</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>{formatTime(todayTotal)}</span>
+          </div>
         </div>
       </div>
     </div>
