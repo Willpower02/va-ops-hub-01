@@ -20,11 +20,6 @@ export default function Dashboard() {
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [, setTick] = useState(0);
 
-  // VAs can't see dashboard - redirect to tasks
-  if (!can('viewDashboard')) {
-    return <Navigate to="/tasks" replace />;
-  }
-
   const { data: vas = [] } = useVAs();
   const { data: allMembers = [] } = useTeamMembers();
   const { data: timers = [] } = useTimers();
@@ -35,6 +30,11 @@ export default function Dashboard() {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // VAs can't see dashboard - redirect to tasks
+  if (!can('viewDashboard')) {
+    return <Navigate to="/tasks" replace />;
+  }
 
   const filtered = vas.filter((va: any) => {
     const nameMatch = va.name.toLowerCase().includes(search.toLowerCase());
@@ -54,7 +54,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Live Operations Dashboard</h1>
@@ -74,16 +73,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats overview */}
       <DashboardStats vas={allMembers} tasks={tasks} timers={timers} />
-
-      {/* Active tasks banner */}
       <ActiveTasksBanner tasks={tasks} timers={timers} vas={allMembers} />
-
-      {/* Weekly summary */}
       <WeeklySummary timers={timers} tasks={tasks} />
 
-      {/* Team section */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Virtual Assistants</h2>
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -101,9 +94,7 @@ export default function Dashboard() {
                 className="capitalize"
               >
                 {s}
-                <span className="ml-1.5 text-xs opacity-70">
-                  {statusCounts[s]}
-                </span>
+                <span className="ml-1.5 text-xs opacity-70">{statusCounts[s]}</span>
               </Button>
             ))}
           </div>
