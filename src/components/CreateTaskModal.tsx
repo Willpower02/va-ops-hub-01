@@ -47,26 +47,26 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader><DialogTitle>Create Task</DialogTitle></DialogHeader>
+      <DialogContent className="sm:max-w-lg glass-card border-border/30">
+        <DialogHeader><DialogTitle className="text-foreground">Create Task</DialogTitle></DialogHeader>
         <div className="space-y-4">
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <div><Label>Task Title *</Label><Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter task title" /></div>
-          <div><Label>Description</Label><Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the task..." rows={3} /></div>
+          <div><Label className="text-muted-foreground">Task Title *</Label><Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter task title" className="bg-secondary/50 border-border/50" /></div>
+          <div><Label className="text-muted-foreground">Description</Label><Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the task..." rows={3} className="bg-secondary/50 border-border/50" /></div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Assign VA *</Label>
+              <Label className="text-muted-foreground">Assign VA *</Label>
               <Select value={vaId} onValueChange={setVaId}>
-                <SelectTrigger><SelectValue placeholder="Select VA" /></SelectTrigger>
+                <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Select VA" /></SelectTrigger>
                 <SelectContent>
                   {vas.map((v: any) => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Priority</Label>
+              <Label className="text-muted-foreground">Priority</Label>
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
@@ -76,14 +76,14 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
               </Select>
             </div>
           </div>
-          <div><Label>Due Date</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>
+          <div><Label className="text-muted-foreground">Due Date</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="bg-secondary/50 border-border/50" /></div>
           <div className="flex items-center gap-2">
             <Checkbox id="startTimer" checked={startImmediately} onCheckedChange={(c) => setStartImmediately(c === true)} />
-            <Label htmlFor="startTimer" className="cursor-pointer">Start timer immediately</Label>
+            <Label htmlFor="startTimer" className="cursor-pointer text-muted-foreground">Start timer immediately</Label>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={addTask.isPending}>
+            <Button variant="outline" onClick={onClose} className="border-border/50 hover:bg-secondary">Cancel</Button>
+            <Button onClick={handleCreate} disabled={addTask.isPending} className="bg-primary hover:bg-primary/90 glow-border">
               {addTask.isPending ? 'Creating...' : startImmediately ? 'Create & Start Timer' : 'Create Task'}
             </Button>
           </div>

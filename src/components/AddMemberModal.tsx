@@ -37,16 +37,16 @@ export function AddMemberModal({ open, onClose }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader><DialogTitle>Add Team Member</DialogTitle></DialogHeader>
+      <DialogContent className="sm:max-w-md glass-card border-border/30">
+        <DialogHeader><DialogTitle className="text-foreground">Add Team Member</DialogTitle></DialogHeader>
         <div className="space-y-4">
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <div><Label>Full Name</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" /></div>
-          <div><Label>Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" /></div>
+          <div><Label className="text-muted-foreground">Full Name</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" className="bg-secondary/50 border-border/50" /></div>
+          <div><Label className="text-muted-foreground">Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" className="bg-secondary/50 border-border/50" /></div>
           <div>
-            <Label>Role</Label>
+            <Label className="text-muted-foreground">Role</Label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="team_lead">Team Lead</SelectItem>
@@ -55,8 +55,8 @@ export function AddMemberModal({ open, onClose }: Props) {
             </Select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSave} disabled={addMember.isPending}>
+            <Button variant="outline" onClick={onClose} className="border-border/50 hover:bg-secondary">Cancel</Button>
+            <Button onClick={handleSave} disabled={addMember.isPending} className="bg-primary hover:bg-primary/90 glow-border">
               {addMember.isPending ? 'Saving...' : 'Save Member'}
             </Button>
           </div>
