@@ -43,11 +43,28 @@ export function useTasks() {
 
 export function useTimers() {
   const { orgId } = useAuth();
+  const qc = useQueryClient();
+
+  // Subscribe to realtime changes on timers
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel('timers-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'timers' },
+        () => {
+          qc.invalidateQueries({ queryKey: ['timers', orgId] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [orgId, qc]);
+
   return useQuery({
     queryKey: ['timers', orgId],
     queryFn: () => fetchTimers(orgId!),
     enabled: !!orgId,
-    refetchInterval: 5000,
   });
 }
 
