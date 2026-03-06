@@ -12,12 +12,14 @@ import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useVAs, useTimers, useTasks, useTeamMembers } from '@/hooks/use-data';
 import { useIdleDetection } from '@/hooks/use-idle-detection';
+import { getElapsedSeconds } from '@/lib/store';
 import { Navigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const { can } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [, setTick] = useState(0);
@@ -27,25 +29,48 @@ export default function Dashboard() {
   const { data: timers = [] } = useTimers();
   const { data: tasks = [] } = useTasks();
 
-  // Auto-detect idle team members (15 min no activity)
   useIdleDetection();
-
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // VAs can't see dashboard - redirect to tasks
   if (!can('viewDashboard')) {
     return <Navigate to="/tasks" replace />;
   }
 
-  const filtered = vas.filter((va: any) => {
+  // Apply search + status bar filter
+  let filtered = vas.filter((va: any) => {
     const nameMatch = va.name.toLowerCase().includes(search.toLowerCase());
     const statusMatch = statusFilter === 'all' || va.status === statusFilter;
     return nameMatch && statusMatch;
   });
+
+  // Apply stat card filter on top
+  if (activeFilter) {
+    const todayStr = new Date().toDateString();
+    filtered = filtered.filter((va: any) => {
+      if (activeFilter === 'active') return va.status === 'active';
+      if (activeFilter === 'idle') return va.status === 'idle' || va.status === 'offline';
+      if (activeFilter === 'running') {
+        const vaTaskIds = tasks
+          .filter((t: any) => t.assigned_team_member_id === va.id && t.status === 'active')
+          .map((t: any) => t.id);
+        return vaTaskIds.length > 0;
+      }
+      if (activeFilter === 'tracked') {
+        const vaTaskIds = tasks
+          .filter((t: any) => t.assigned_team_member_id === va.id)
+          .map((t: any) => t.id);
+        const trackedToday = timers
+          .filter((t: any) => vaTaskIds.includes(t.task_id) && new Date(t.started_at).toDateString() === todayStr)
+          .reduce((sum: number, t: any) => sum + getElapsedSeconds(t), 0);
+        return trackedToday > 0;
+      }
+      return true;
+    });
+  }
 
   const statusCounts = {
     all: vas.length,
@@ -78,16 +103,29 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <DashboardStats vas={allMembers} tasks={tasks} timers={timers} />
+      <DashboardStats vas={allMembers} tasks={tasks} timers={timers} activeFilter={activeFilter} onFilterChange={setActiveFilter} />
       <ActiveTasksBanner tasks={tasks} timers={timers} vas={allMembers} />
-      {/* Weekly summary + Activity feed side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <WeeklySummary timers={timers} tasks={tasks} />
         <ActivityFeed />
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-3">Virtual Assistants</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-foreground">
+            Virtual Assistants
+            {activeFilter && (
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                — filtered by {activeFilter === 'tracked' ? 'time tracked' : activeFilter}
+              </span>
+            )}
+          </h2>
+          {activeFilter && (
+            <Button variant="ghost" size="sm" onClick={() => setActiveFilter(null)} className="text-xs text-muted-foreground">
+              Clear filter
+            </Button>
+          )}
+        </div>
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -112,7 +150,12 @@ export default function Dashboard() {
         {filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-muted-foreground text-lg">No VAs found</p>
-            {can('addMembers') && (
+            {activeFilter && (
+              <Button className="mt-4" variant="outline" onClick={() => setActiveFilter(null)}>
+                Clear filter
+              </Button>
+            )}
+            {!activeFilter && can('addMembers') && (
               <Button className="mt-4" onClick={() => setAddMemberOpen(true)}>
                 <Plus className="h-4 w-4 mr-1" /> Add Your First VA
               </Button>

@@ -1,18 +1,15 @@
-import { useState } from 'react';
 import { Users, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
-import { useNavigate } from 'react-router-dom';
 
 interface DashboardStatsProps {
   vas: any[];
   tasks: any[];
   timers: any[];
+  activeFilter: string | null;
+  onFilterChange: (filter: string | null) => void;
 }
 
-export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
-  const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
-
+export function DashboardStats({ vas, tasks, timers, activeFilter, onFilterChange }: DashboardStatsProps) {
   const activeVAs = vas.filter((v: any) => v.status === 'active').length;
   const idleVAs = vas.filter((v: any) => v.status === 'idle' || v.status === 'offline').length;
   const activeTasks = tasks.filter((t: any) => t.status === 'active').length;
@@ -26,9 +23,8 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
     .filter((t: any) => new Date(t.started_at).toDateString() === todayStr)
     .reduce((sum: number, t: any) => sum + getElapsedSeconds(t), 0);
 
-  const handleCardClick = (type: string, link: string) => {
-    setActiveFilter(type);
-    navigate(link);
+  const handleClick = (type: string) => {
+    onFilterChange(activeFilter === type ? null : type);
   };
 
   const stats = [
@@ -41,7 +37,6 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       color: 'text-success',
       bg: 'bg-success/10',
       glowClass: activeVAs > 0 ? 'glow-border-success' : '',
-      link: '/team?status=active',
       activeRing: 'border-primary ring-2 ring-primary/30',
     },
     {
@@ -53,7 +48,6 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       color: 'text-primary',
       bg: 'bg-primary/10',
       glowClass: activeTasks > 0 ? 'glow-border' : '',
-      link: '/tasks?status=running',
       activeRing: 'border-primary ring-2 ring-primary/30',
     },
     {
@@ -66,7 +60,6 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       bg: 'bg-primary/10',
       glowClass: '',
       isTimer: true,
-      link: '/reports?view=today',
       activeRing: 'border-primary ring-2 ring-primary/30',
     },
     {
@@ -78,7 +71,6 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       color: idleVAs > 0 ? 'text-warning' : 'text-muted-foreground',
       bg: idleVAs > 0 ? 'bg-warning/10' : 'bg-muted',
       glowClass: '',
-      link: '/team?status=idle',
       activeRing: 'border-warning ring-2 ring-warning/30',
     },
   ];
@@ -88,7 +80,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       {stats.map((stat) => (
         <button
           key={stat.label}
-          onClick={() => handleCardClick(stat.type, stat.link)}
+          onClick={() => handleClick(stat.type)}
           className={`glass-card rounded-2xl border p-6 text-left shadow-sm transition-all duration-300 hover:scale-[1.01] hover:shadow-lg hover:shadow-primary/5 ${stat.glowClass} ${
             activeFilter === stat.type ? stat.activeRing : 'border-border/10'
           }`}
