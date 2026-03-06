@@ -1,15 +1,18 @@
 import { Users, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardStatsProps {
   vas: any[];
   tasks: any[];
   timers: any[];
-  activeFilter: string | null;
-  onFilterChange: (filter: string | null) => void;
+  activeFilter?: string | null;
+  onFilterChange?: (filter: string | null) => void;
 }
 
-export function DashboardStats({ vas, tasks, timers, activeFilter, onFilterChange }: DashboardStatsProps) {
+export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
+  const navigate = useNavigate();
+
   const activeVAs = vas.filter((v: any) => v.status === 'active').length;
   const idleVAs = vas.filter((v: any) => v.status === 'idle' || v.status === 'offline').length;
   const activeTasks = tasks.filter((t: any) => t.status === 'active').length;
@@ -23,13 +26,8 @@ export function DashboardStats({ vas, tasks, timers, activeFilter, onFilterChang
     .filter((t: any) => new Date(t.started_at).toDateString() === todayStr)
     .reduce((sum: number, t: any) => sum + getElapsedSeconds(t), 0);
 
-  const handleClick = (type: string) => {
-    onFilterChange(activeFilter === type ? null : type);
-  };
-
   const stats = [
     {
-      type: 'active',
       label: 'Active Now',
       value: activeVAs,
       sub: `of ${vas.length} team members`,
@@ -37,10 +35,9 @@ export function DashboardStats({ vas, tasks, timers, activeFilter, onFilterChang
       color: 'text-success',
       bg: 'bg-success/10',
       glowClass: activeVAs > 0 ? 'glow-border-success' : '',
-      activeRing: 'border-primary ring-2 ring-primary/30',
+      link: '/team?status=active',
     },
     {
-      type: 'running',
       label: 'Running Tasks',
       value: activeTasks,
       sub: `${completedToday} completed today`,
@@ -48,10 +45,9 @@ export function DashboardStats({ vas, tasks, timers, activeFilter, onFilterChang
       color: 'text-primary',
       bg: 'bg-primary/10',
       glowClass: activeTasks > 0 ? 'glow-border' : '',
-      activeRing: 'border-primary ring-2 ring-primary/30',
+      link: '/tasks?status=running',
     },
     {
-      type: 'tracked',
       label: 'Time Tracked Today',
       value: formatTime(totalTrackedToday),
       sub: 'across all members',
@@ -60,10 +56,9 @@ export function DashboardStats({ vas, tasks, timers, activeFilter, onFilterChang
       bg: 'bg-primary/10',
       glowClass: '',
       isTimer: true,
-      activeRing: 'border-primary ring-2 ring-primary/30',
+      link: '/reports?view=today',
     },
     {
-      type: 'idle',
       label: 'Idle Members',
       value: idleVAs,
       sub: idleVAs > 0 ? 'available for tasks' : 'everyone is busy',
@@ -71,7 +66,7 @@ export function DashboardStats({ vas, tasks, timers, activeFilter, onFilterChang
       color: idleVAs > 0 ? 'text-warning' : 'text-muted-foreground',
       bg: idleVAs > 0 ? 'bg-warning/10' : 'bg-muted',
       glowClass: '',
-      activeRing: 'border-warning ring-2 ring-warning/30',
+      link: '/team?status=idle',
     },
   ];
 
@@ -80,10 +75,8 @@ export function DashboardStats({ vas, tasks, timers, activeFilter, onFilterChang
       {stats.map((stat) => (
         <button
           key={stat.label}
-          onClick={() => handleClick(stat.type)}
-          className={`glass-card rounded-2xl border p-6 text-left shadow-sm transition-all duration-300 hover:scale-[1.01] hover:shadow-lg hover:shadow-primary/5 ${stat.glowClass} ${
-            activeFilter === stat.type ? stat.activeRing : 'border-border/10'
-          }`}
+          onClick={() => navigate(stat.link)}
+          className={`glass-card rounded-2xl border border-border/10 p-6 text-left shadow-sm transition-all duration-300 cursor-pointer hover:scale-[1.01] hover:shadow-lg hover:shadow-primary/5 hover:border-primary/40 hover:ring-2 hover:ring-primary/20 active:scale-[0.99] active:ring-2 active:ring-primary/30 active:border-primary ${stat.glowClass}`}
         >
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center`}>

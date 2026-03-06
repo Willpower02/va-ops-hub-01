@@ -4,11 +4,13 @@ import { useTimers, useTasks, useVAs, useTeamMembers } from '@/hooks/use-data';
 import { formatTime, getElapsedSeconds } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Download, Clock, CheckCircle, Trophy, Timer, Users, TrendingUp } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 
 export default function ReportsPage() {
   const { can } = useAuth();
+  const [searchParams] = useSearchParams();
+  const view = searchParams.get('view'); // 'today' highlights today's data
 
   const { data: timers = [] } = useTimers();
   const { data: tasks = [] } = useTasks();
@@ -32,7 +34,7 @@ export default function ReportsPage() {
   }, [members, tasks, timers, todayStr]);
 
   const weeklyData = useMemo(() => {
-    const days: { day: string; hours: number; tasks: number }[] = [];
+    const days: { day: string; hours: number; tasks: number; isToday: boolean }[] = [];
     const now = new Date();
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
@@ -43,7 +45,7 @@ export default function ReportsPage() {
         .filter((t: any) => new Date(t.started_at).toDateString() === dateStr)
         .reduce((s: number, t: any) => s + getElapsedSeconds(t), 0);
       const done = tasks.filter((t: any) => t.status === 'completed' && new Date(t.created_at).toDateString() === dateStr).length;
-      days.push({ day: label, hours: Math.round((sec / 3600) * 100) / 100, tasks: done });
+      days.push({ day: label, hours: Math.round((sec / 3600) * 100) / 100, tasks: done, isToday: i === 0 });
     }
     return days;
   }, [timers, tasks]);
@@ -84,10 +86,10 @@ export default function ReportsPage() {
   };
 
   const statCards = [
-    { label: 'Hours Tracked Today', value: formatTime(totalTodaySeconds), icon: Clock, color: 'text-primary', bg: 'bg-primary/10' },
-    { label: 'Tasks Completed Today', value: completedToday, icon: CheckCircle, color: 'text-success', bg: 'bg-success/10' },
-    { label: 'Most Active Member', value: mostActive?.name || 'N/A', sub: mostActive ? formatTime(mostActive.totalSec) : '', icon: Trophy, color: 'text-warning', bg: 'bg-warning/10' },
-    { label: 'Avg Task Duration', value: formatTime(Math.round(avgDuration)), icon: Timer, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: 'Hours Tracked Today', value: formatTime(totalTodaySeconds), icon: Clock, color: 'text-primary', bg: 'bg-primary/10', highlight: view === 'today' },
+    { label: 'Tasks Completed Today', value: completedToday, icon: CheckCircle, color: 'text-success', bg: 'bg-success/10', highlight: view === 'today' },
+    { label: 'Most Active Member', value: mostActive?.name || 'N/A', sub: mostActive ? formatTime(mostActive.totalSec) : '', icon: Trophy, color: 'text-warning', bg: 'bg-warning/10', highlight: false },
+    { label: 'Avg Task Duration', value: formatTime(Math.round(avgDuration)), icon: Timer, color: 'text-primary', bg: 'bg-primary/10', highlight: false },
   ];
 
   const CHART_COLORS = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(48, 96%, 53%)', 'hsl(0, 84%, 60%)', 'hsl(215, 28%, 40%)'];
@@ -97,7 +99,9 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
-          <p className="text-sm text-muted-foreground mt-1">Team performance overview</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {view === 'today' ? "Today's time tracking overview" : 'Team performance overview'}
+          </p>
         </div>
         {can('exportCsv') && (
           <Button variant="outline" onClick={handleExport} className="border-border/50 hover:bg-secondary"><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
@@ -106,7 +110,7 @@ export default function ReportsPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <div key={s.label} className="glass-card rounded-2xl p-5">
+          <div key={s.label} className={`glass-card rounded-2xl p-5 transition-all ${s.highlight ? 'ring-2 ring-primary/30 border-primary' : ''}`}>
             <div className="flex items-center gap-2 mb-2">
               <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center`}>
                 <s.icon className={`h-4 w-4 ${s.color}`} />
@@ -134,7 +138,11 @@ export default function ReportsPage() {
                 contentStyle={{ borderRadius: '12px', border: '1px solid hsl(215, 28%, 20%)', fontSize: 12, background: 'hsl(216, 45%, 14%)', color: 'hsl(213, 31%, 91%)' }}
                 formatter={(value: any, name: string) => [name === 'hours' ? `${value}h` : value, name === 'hours' ? 'Hours' : 'Tasks']}
               />
-              <Bar dataKey="hours" fill="hsl(217, 91%, 60%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
+                {weeklyData.map((entry, i) => (
+                  <Cell key={i} fill={view === 'today' && entry.isToday ? 'hsl(142, 71%, 45%)' : 'hsl(217, 91%, 60%)'} />
+                ))}
+              </Bar>
               <Bar dataKey="tasks" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
