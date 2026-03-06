@@ -5,19 +5,22 @@ import { Badge } from '@/components/ui/badge';
 import { AddMemberModal } from '@/components/AddMemberModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembers } from '@/hooks/use-data';
+import { Navigate } from 'react-router-dom';
 
 const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-primary text-primary-foreground',
-  operations_manager: 'bg-secondary text-secondary-foreground',
   team_lead: 'bg-accent text-accent-foreground',
   va: 'bg-success/10 text-success',
-  viewer: 'bg-muted text-muted-foreground',
 };
 
 export default function TeamPage() {
   const { can } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
   const { data: users = [] } = useTeamMembers();
+
+  if (!can('viewTeam')) {
+    return <Navigate to="/tasks" replace />;
+  }
 
   return (
     <div>
@@ -41,9 +44,9 @@ export default function TeamPage() {
                   <h3 className="font-semibold text-card-foreground">{u.name}</h3>
                   <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge className={`${ROLE_COLORS[u.role] || ''} text-xs capitalize`}>{u.role.replace('_', ' ')}</Badge>
-                    <span className={`text-xs ${u.is_active !== false ? 'text-success' : 'text-muted-foreground'}`}>
-                      {u.is_active !== false ? 'Active' : 'Inactive'}
+                    <Badge className={`${ROLE_COLORS[u.role] || 'bg-muted text-muted-foreground'} text-xs capitalize`}>{u.role.replace('_', ' ')}</Badge>
+                    <span className={`text-xs ${u.status !== 'offline' ? 'text-success' : 'text-muted-foreground'}`}>
+                      {u.status !== 'offline' ? 'Active' : 'Inactive'}
                     </span>
                   </div>
                 </div>

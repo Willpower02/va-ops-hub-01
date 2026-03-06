@@ -8,19 +8,21 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 
-const navItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Tasks', url: '/tasks', icon: ListTodo },
-  { title: 'Team', url: '/team', icon: Users },
-  { title: 'Reports', url: '/reports', icon: BarChart3 },
-  { title: 'Settings', url: '/settings', icon: Settings },
+const allNavItems = [
+  { title: 'Dashboard', url: '/', icon: LayoutDashboard, permission: 'viewDashboard' as const },
+  { title: 'Tasks', url: '/tasks', icon: ListTodo, permission: null },
+  { title: 'Team', url: '/team', icon: Users, permission: 'viewTeam' as const },
+  { title: 'Reports', url: '/reports', icon: BarChart3, permission: 'viewAnalytics' as const },
+  { title: 'Settings', url: '/settings', icon: Settings, permission: 'manageOrg' as const },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { userName, role } = useAuth();
+  const { userName, role, can } = useAuth();
   const initials = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
+
+  const navItems = allNavItems.filter(item => !item.permission || can(item.permission));
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">

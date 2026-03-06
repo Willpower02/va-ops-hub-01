@@ -3,9 +3,15 @@ import { useTimers, useTasks, useVAs, useTeamMembers } from '@/hooks/use-data';
 import { formatTime, getElapsedSeconds } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 export default function ReportsPage() {
   const { can } = useAuth();
+
+  if (!can('viewAnalytics')) {
+    return <Navigate to="/tasks" replace />;
+  }
+
   const { data: timers = [] } = useTimers();
   const { data: tasks = [] } = useTasks();
   const { data: vas = [] } = useVAs();

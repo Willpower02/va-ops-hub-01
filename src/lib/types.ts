@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'operations_manager' | 'team_lead' | 'va' | 'viewer';
+export type Role = 'admin' | 'team_lead' | 'va';
 export type VAStatus = 'active' | 'paused' | 'idle' | 'offline';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type TaskStatus = 'pending' | 'active' | 'paused' | 'completed';
@@ -15,9 +15,46 @@ export interface TimerRecord {
 }
 
 export const ROLE_PERMISSIONS = {
-  admin: { addMembers: true, createTasks: true, controlTimers: true, addComments: true, exportCsv: true },
-  operations_manager: { addMembers: true, createTasks: true, controlTimers: true, addComments: true, exportCsv: true },
-  team_lead: { addMembers: false, createTasks: true, controlTimers: true, addComments: true, exportCsv: false },
-  va: { addMembers: false, createTasks: false, controlTimers: false, addComments: true, exportCsv: false },
-  viewer: { addMembers: false, createTasks: false, controlTimers: false, addComments: false, exportCsv: false },
+  admin: {
+    manageOrg: true,
+    addMembers: true,
+    removeMembers: true,
+    createTasks: true,
+    editTasks: true,
+    deleteTasks: true,
+    controlTimers: true,
+    viewAnalytics: true,
+    exportCsv: true,
+    viewTeam: true,
+    viewDashboard: true,
+    addComments: true,
+  },
+  team_lead: {
+    manageOrg: false,
+    addMembers: false,
+    removeMembers: false,
+    createTasks: true,
+    editTasks: true,
+    deleteTasks: false,
+    controlTimers: true,
+    viewAnalytics: false,
+    exportCsv: false,
+    viewTeam: true,
+    viewDashboard: true,
+    addComments: true,
+  },
+  va: {
+    manageOrg: false,
+    addMembers: false,
+    removeMembers: false,
+    createTasks: false,
+    editTasks: false,
+    deleteTasks: false,
+    controlTimers: false,
+    viewAnalytics: false,
+    exportCsv: false,
+    viewTeam: false,
+    viewDashboard: false,
+    addComments: true,
+  },
 } as const;
