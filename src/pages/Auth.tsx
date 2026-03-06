@@ -4,9 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { ArrowLeft } from 'lucide-react';
+import LandingPage from './LandingPage';
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [showAuth, setShowAuth] = useState(false);
+  const [isLogin, setIsLogin] = useState(false); // default to signup for trial CTA
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -39,9 +42,21 @@ export default function AuthPage() {
     }
   };
 
+  if (!showAuth) {
+    return <LandingPage onGetStarted={() => setShowAuth(true)} />;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, hsl(216 55% 8%) 0%, hsl(215 45% 14%) 50%, hsl(216 40% 10%) 100%)' }}>
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm animate-fade-in">
+        <button
+          onClick={() => setShowAuth(false)}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
+
         <div className="flex items-center justify-center gap-2 mb-8">
           <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center glow-border">
             <span className="text-primary font-bold">VA</span>
@@ -50,7 +65,10 @@ export default function AuthPage() {
         </div>
 
         <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-foreground mb-4">{isLogin ? 'Sign In' : 'Create Account'}</h2>
+          <h2 className="text-xl font-bold text-foreground mb-4">{isLogin ? 'Sign In' : 'Start Your Free Trial'}</h2>
+          {!isLogin && (
+            <p className="text-sm text-muted-foreground mb-4">7 days free. No credit card required.</p>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="grid grid-cols-2 gap-3">
@@ -72,8 +90,12 @@ export default function AuthPage() {
               <Label className="text-muted-foreground">Password</Label>
               <Input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="bg-secondary/50 border-border/50" />
             </div>
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 glow-border" disabled={loading}>
-              {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary/90 glow-border font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.01]"
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Start Free Trial'}
             </Button>
           </form>
           <p className="text-sm text-muted-foreground text-center mt-4">
