@@ -7,6 +7,7 @@ import { AddMemberModal } from '@/components/AddMemberModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useVAs, useTimers, useTasks } from '@/hooks/use-data';
+import { Navigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const { can } = useAuth();
@@ -14,6 +15,11 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+
+  // VAs can't see dashboard - redirect to tasks
+  if (!can('viewDashboard')) {
+    return <Navigate to="/tasks" replace />;
+  }
 
   const { data: vas = [] } = useVAs();
   const { data: timers = [] } = useTimers();

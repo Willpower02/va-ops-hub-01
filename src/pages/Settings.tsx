@@ -3,9 +3,14 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { Navigate } from 'react-router-dom';
 
 export default function SettingsPage() {
-  const { userName, userEmail, role } = useAuth();
+  const { userName, userEmail, role, can } = useAuth();
+
+  if (!can('manageOrg')) {
+    return <Navigate to="/tasks" replace />;
+  }
 
   const initials = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
 
