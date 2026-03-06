@@ -17,22 +17,6 @@ export default function ReportsPage() {
 
   const todayStr = new Date().toDateString();
 
-  if (!can('viewAnalytics')) {
-    return <Navigate to="/tasks" replace />;
-  }
-
-  // Today metrics
-  const todayTimers = timers.filter((t: any) => new Date(t.started_at).toDateString() === todayStr);
-  const totalTodaySeconds = todayTimers.reduce((s: number, t: any) => s + getElapsedSeconds(t), 0);
-  const completedToday = tasks.filter((t: any) => t.status === 'completed' && new Date(t.created_at).toDateString() === todayStr).length;
-
-  // All-time
-  const completedTasks = tasks.filter((t: any) => t.status === 'completed');
-  const stoppedTimers = timers.filter((t: any) => t.status === 'stopped');
-  const avgDuration = stoppedTimers.length > 0
-    ? stoppedTimers.reduce((s: number, t: any) => s + t.duration_seconds, 0) / stoppedTimers.length
-    : 0;
-
   // Per-member stats
   const memberStats = useMemo(() => {
     return members.map((m: any) => {
@@ -47,8 +31,6 @@ export default function ReportsPage() {
       return { id: m.id, name: m.name, totalSec, todaySec, completed, role: m.role };
     }).sort((a: any, b: any) => b.totalSec - a.totalSec);
   }, [members, tasks, timers, todayStr]);
-
-  const mostActive = memberStats[0];
 
   // Weekly productivity chart data
   const weeklyData = useMemo(() => {
@@ -74,6 +56,23 @@ export default function ReportsPage() {
       .filter((m: any) => m.completed > 0)
       .map((m: any) => ({ name: m.name.split(' ')[0], completed: m.completed, hours: Math.round((m.totalSec / 3600) * 10) / 10 }));
   }, [memberStats]);
+
+  if (!can('viewAnalytics')) {
+    return <Navigate to="/tasks" replace />;
+  }
+
+  // Today metrics
+  const todayTimers = timers.filter((t: any) => new Date(t.started_at).toDateString() === todayStr);
+  const totalTodaySeconds = todayTimers.reduce((s: number, t: any) => s + getElapsedSeconds(t), 0);
+  const completedToday = tasks.filter((t: any) => t.status === 'completed' && new Date(t.created_at).toDateString() === todayStr).length;
+
+  const completedTasks = tasks.filter((t: any) => t.status === 'completed');
+  const stoppedTimers = timers.filter((t: any) => t.status === 'stopped');
+  const avgDuration = stoppedTimers.length > 0
+    ? stoppedTimers.reduce((s: number, t: any) => s + t.duration_seconds, 0) / stoppedTimers.length
+    : 0;
+
+  const mostActive = memberStats[0];
 
   const handleExport = () => {
     const rows = [['Member', 'Task', 'Duration (s)', 'Status', 'Date']];
