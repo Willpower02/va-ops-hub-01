@@ -102,9 +102,42 @@
     box-shadow: 0 0 12px -3px hsla(142, 71%, 45%, 0.3);
   }
 
+  .glow-border-warning {
+    box-shadow: 0 0 10px -3px hsla(48, 96%, 53%, 0.25);
+  }
+
   .timer-digits {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-variant-numeric: tabular-nums;
+  }
+
+  .timer-glow {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 8px hsla(142, 71%, 45%, 0.5), 0 0 20px hsla(142, 71%, 45%, 0.2);
+  }
+
+  .status-dot {
+    @apply w-2.5 h-2.5 rounded-full shrink-0;
+  }
+
+  .status-dot-active {
+    @apply status-dot bg-success;
+    box-shadow: 0 0 6px hsla(142, 71%, 45%, 0.5);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .status-dot-paused {
+    @apply status-dot bg-warning;
+    box-shadow: 0 0 6px hsla(48, 96%, 53%, 0.4);
+  }
+
+  .status-dot-idle {
+    @apply status-dot bg-muted-foreground/40;
+  }
+
+  .status-dot-offline {
+    @apply status-dot bg-foreground/20;
   }
 
   .gradient-text {

@@ -37,13 +37,13 @@ export function ActiveTasksBanner({ tasks, timers, vas }: ActiveTasksBannerProps
       </div>
       <div className="space-y-2">
         {activeTimers.map(({ task, timer, va }) => (
-          <div key={task.id} className="flex items-center gap-3 bg-secondary/50 rounded-xl px-3 py-2 border border-border/30">
-            <div className="w-2 h-2 rounded-full bg-success animate-pulse shrink-0" />
+          <div key={task.id} className="flex items-center gap-3 bg-secondary/50 rounded-xl px-3 py-2 border border-border/30 transition-all duration-300 hover:bg-secondary/70 hover:border-success/20">
+            <span className="status-dot-active" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
               <p className="text-xs text-muted-foreground">{va?.name || 'Unassigned'}</p>
             </div>
-            <span className="font-bold text-success text-sm timer-digits">
+            <span className="font-bold text-success text-sm timer-glow">
               {formatTime(getElapsedSeconds(timer))}
             </span>
           </div>

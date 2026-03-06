@@ -29,7 +29,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       icon: Users,
       color: 'text-success',
       bg: 'bg-success/10',
-      glowClass: 'glow-border-success',
+      glowClass: activeVAs > 0 ? 'glow-border-success' : '',
     },
     {
       label: 'Running Tasks',
@@ -38,7 +38,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       icon: Clock,
       color: 'text-primary',
       bg: 'bg-primary/10',
-      glowClass: 'glow-border',
+      glowClass: activeTasks > 0 ? 'glow-border' : '',
     },
     {
       label: 'Time Tracked Today',
@@ -48,6 +48,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       color: 'text-primary',
       bg: 'bg-primary/10',
       glowClass: '',
+      isTimer: true,
     },
     {
       label: 'Idle Members',
@@ -63,14 +64,14 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((stat) => (
-        <div key={stat.label} className={`glass-card rounded-2xl p-4 ${stat.glowClass}`}>
+        <div key={stat.label} className={`glass-card rounded-2xl p-4 transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 ${stat.glowClass}`}>
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center`}>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </div>
             <span className="text-xs font-medium text-muted-foreground">{stat.label}</span>
           </div>
-          <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+          <p className={`text-2xl font-bold ${stat.color} ${'isTimer' in stat && stat.isTimer ? 'timer-digits' : ''}`}>{stat.value}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{stat.sub}</p>
         </div>
       ))}
