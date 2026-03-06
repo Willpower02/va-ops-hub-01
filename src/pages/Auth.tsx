@@ -21,8 +21,10 @@ export default function AuthPage() {
     setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        console.log('[Auth] login started');
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        console.log('[Auth] login success', data.session ? 'session found' : 'no session found');
         toast.success('Signed in successfully!');
       } else {
         const { error } = await supabase.auth.signUp({
