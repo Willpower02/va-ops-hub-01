@@ -1,5 +1,6 @@
 import { Users, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardStatsProps {
   vas: any[];
@@ -8,6 +9,7 @@ interface DashboardStatsProps {
 }
 
 export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
+  const navigate = useNavigate();
   const activeVAs = vas.filter((v: any) => v.status === 'active').length;
   const idleVAs = vas.filter((v: any) => v.status === 'idle' || v.status === 'offline').length;
   const activeTasks = tasks.filter((t: any) => t.status === 'active').length;
@@ -30,6 +32,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       color: 'text-success',
       bg: 'bg-success/10',
       glowClass: activeVAs > 0 ? 'glow-border-success' : '',
+      link: '/team?status=active',
     },
     {
       label: 'Running Tasks',
@@ -39,6 +42,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       color: 'text-primary',
       bg: 'bg-primary/10',
       glowClass: activeTasks > 0 ? 'glow-border' : '',
+      link: '/tasks?status=running',
     },
     {
       label: 'Time Tracked Today',
@@ -49,6 +53,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       bg: 'bg-primary/10',
       glowClass: '',
       isTimer: true,
+      link: '/reports?view=today',
     },
     {
       label: 'Idle Members',
@@ -58,13 +63,18 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       color: idleVAs > 0 ? 'text-warning' : 'text-muted-foreground',
       bg: idleVAs > 0 ? 'bg-warning/10' : 'bg-muted',
       glowClass: '',
+      link: '/team?status=idle',
     },
   ];
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((stat) => (
-        <div key={stat.label} className={`glass-card rounded-2xl p-4 transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 ${stat.glowClass}`}>
+        <div
+          key={stat.label}
+          onClick={() => navigate(stat.link)}
+          className={`glass-card rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 ${stat.glowClass}`}
+        >
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center`}>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
