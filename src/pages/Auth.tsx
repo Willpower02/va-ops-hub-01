@@ -9,7 +9,7 @@ import LandingPage from './LandingPage';
 
 export default function AuthPage() {
   const [showAuth, setShowAuth] = useState(false);
-  const [isLogin, setIsLogin] = useState(false); // default to signup for trial CTA
+  const [isLogin, setIsLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -23,6 +23,7 @@ export default function AuthPage() {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        toast.success('Signed in successfully!');
       } else {
         const { error } = await supabase.auth.signUp({
           email,
