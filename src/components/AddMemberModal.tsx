@@ -49,10 +49,8 @@ export function AddMemberModal({ open, onClose }: Props) {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="operations_manager">Operations Manager</SelectItem>
                 <SelectItem value="team_lead">Team Lead</SelectItem>
                 <SelectItem value="va">Virtual Assistant</SelectItem>
-                <SelectItem value="viewer">Viewer</SelectItem>
               </SelectContent>
             </Select>
           </div>
