@@ -18,7 +18,18 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { session, orgId, role, loading, authError } = useAuth();
+  const { session, profile, orgId, role, loading, authError } = useAuth();
+
+  console.log('[Router] state:', {
+    hasSession: !!session,
+    userId: session?.user?.id ?? null,
+    email: session?.user?.email ?? null,
+    profile: profile ? { id: profile.id, email: profile.email } : null,
+    orgId,
+    role,
+    loading,
+    authError,
+  });
 
   // 1. Still loading — show spinner
   if (loading) {
