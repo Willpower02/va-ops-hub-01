@@ -159,6 +159,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          invite_status: string
           name: string
           organization_id: string
           role: string
@@ -169,6 +170,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          invite_status?: string
           name: string
           organization_id: string
           role?: string
@@ -179,6 +181,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          invite_status?: string
           name?: string
           organization_id?: string
           role?: string
