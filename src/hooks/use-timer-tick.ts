@@ -8,14 +8,14 @@ export function useTimerTick(timer: TimerRecord | undefined) {
   useEffect(() => {
     if (!timer) { setElapsed(0); return; }
     if (timer.status === 'paused' || timer.status === 'stopped') {
-      setElapsed(timer.total_seconds);
+      setElapsed(timer.duration_seconds);
       return;
     }
     const update = () => setElapsed(getElapsedSeconds(timer));
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [timer?.id, timer?.status, timer?.started_at, timer?.total_seconds]);
+  }, [timer?.id, timer?.status, timer?.started_at, timer?.duration_seconds]);
 
   return elapsed;
 }
