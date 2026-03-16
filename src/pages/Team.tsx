@@ -1,10 +1,20 @@
 import { useState } from 'react';
-import { Plus, RotateCw } from 'lucide-react';
+import { Plus, RotateCw, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { AddMemberModal } from '@/components/AddMemberModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTeamMembers, useResendInvite } from '@/hooks/use-data';
+import { useTeamMembers, useResendInvite, useDeleteTeamMember } from '@/hooks/use-data';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -23,6 +33,9 @@ export default function TeamPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const statusFilter = searchParams.get('status') || 'all';
   const resendInvite = useResendInvite();
+  const deleteTeamMember = useDeleteTeamMember();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   if (!can('viewTeam')) {
     return <Navigate to="/tasks" replace />;
@@ -51,6 +64,20 @@ export default function TeamPage() {
       toast.success('Invitation resent successfully');
     } catch (err: any) {
       toast.error(err.message || 'Failed to resend invitation');
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await deleteTeamMember.mutateAsync(deleteTarget.id);
+      toast.success(`${deleteTarget.name} removed from team`);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to remove team member');
+    } finally {
+      setDeleteLoading(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -100,18 +127,31 @@ export default function TeamPage() {
                       </span>
                     )}
                   </div>
-                  {isPending && can('addMembers') && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2 text-xs text-primary hover:text-primary/80 h-7 px-2"
-                      onClick={() => handleResendInvite(u.email)}
-                      disabled={resendInvite.isPending}
-                    >
-                      <RotateCw className="h-3 w-3 mr-1" />
-                      Resend Invite
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-1 mt-2">
+                    {isPending && can('addMembers') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-primary hover:text-primary/80 h-7 px-2"
+                        onClick={() => handleResendInvite(u.email)}
+                        disabled={resendInvite.isPending}
+                      >
+                        <RotateCw className="h-3 w-3 mr-1" />
+                        Resend Invite
+                      </Button>
+                    )}
+                    {can('addMembers') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-destructive hover:text-destructive h-7 px-2"
+                        onClick={() => setDeleteTarget({ id: u.id, name: u.name })}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -123,6 +163,28 @@ export default function TeamPage() {
       </div>
 
       <AddMemberModal open={addOpen} onClose={() => setAddOpen(false)} />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove {deleteTarget?.name} from the team? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleteLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -208,3 +208,23 @@ export function useUpdateTaskStatus() {
     },
   });
 }
+
+export function useDeleteTeamMember() {
+  const qc = useQueryClient();
+  const { orgId, session } = useAuth();
+  return useMutation({
+    mutationFn: async (memberId: string) => {
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', memberId);
+      if (error) throw error;
+      await logActivity({ user_id: session!.user.id, action: 'member_removed', details: { member_id: memberId }, organization_id: orgId! });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['team_members'] });
+      qc.invalidateQueries({ queryKey: ['vas'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
+    },
+  });
+}
