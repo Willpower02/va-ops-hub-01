@@ -34,7 +34,7 @@ export default function VADetail() {
   if (!va) return <div className="p-8 text-center text-muted-foreground">VA not found</div>;
 
   const tasks = allTasks.filter((t: any) => t.assigned_team_member_id === va.id);
-  const activeTasks = tasks.filter((t: any) => t.status === 'active');
+  const activeTasks = tasks.filter((t: any) => t.status === 'active' || t.status === 'running');
   const pendingTasks = tasks.filter((t: any) => t.status === 'pending');
   const pausedTasks = tasks.filter((t: any) => t.status === 'paused');
   const completedTasks = tasks.filter((t: any) => t.status === 'completed');

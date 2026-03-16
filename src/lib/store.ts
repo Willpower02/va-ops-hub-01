@@ -171,59 +171,105 @@ export const logActivity = async (log: {
 
 // ---- Timer operations ----
 
-export const startTimerOp = async (taskId: string, teamMemberId: string, orgId: string, userId: string) => {
-  const { data: existing } = await supabase
+const fetchOpenTimersForTask = async (taskId: string) => {
+  const { data, error } = await supabase
     .from('timers')
     .select('*')
     .eq('task_id', taskId)
-    .neq('status', 'stopped')
-    .maybeSingle();
+    .in('status', ['running', 'paused'])
+    .order('created_at', { ascending: false });
 
-  if (existing && existing.status === 'paused') {
-    // Resume: update started_at to now
-    await updateTimer(existing.id, { status: 'running', started_at: new Date().toISOString() });
-  } else if (!existing) {
-    await addTimer({ task_id: taskId, started_at: new Date().toISOString(), duration_seconds: 0, status: 'running' });
+  if (error) throw error;
+  return data || [];
+};
+
+export const startTimerOp = async (taskId: string, teamMemberId: string, orgId: string, userId: string) => {
+  const openTimers = await fetchOpenTimersForTask(taskId);
+  const runningTimer = openTimers.find((t: any) => t.status === 'running');
+  const pausedTimer = openTimers.find((t: any) => t.status === 'paused');
+
+  if (!runningTimer) {
+    if (pausedTimer) {
+      await updateTimer(pausedTimer.id, { status: 'running', started_at: new Date().toISOString(), stopped_at: null });
+    } else {
+      await addTimer({ task_id: taskId, started_at: new Date().toISOString(), duration_seconds: 0, status: 'running' });
+    }
   }
+
   await updateTask(taskId, { status: 'active' });
   await updateTeamMember(teamMemberId, { status: 'active' });
   await logActivity({ user_id: userId, action: 'timer_started', details: { task_id: taskId }, organization_id: orgId });
 };
 
 export const pauseTimerOp = async (taskId: string, orgId: string, userId: string) => {
-  const { data: timer } = await supabase
-    .from('timers')
-    .select('*')
-    .eq('task_id', taskId)
-    .eq('status', 'running')
-    .maybeSingle();
-  if (!timer) return;
-  const elapsed = Math.floor((Date.now() - new Date(timer.started_at).getTime()) / 1000);
-  await updateTimer(timer.id, { status: 'paused', stopped_at: new Date().toISOString(), duration_seconds: timer.duration_seconds + elapsed });
+  const openTimers = await fetchOpenTimersForTask(taskId);
+  const runningTimers = openTimers.filter((t: any) => t.status === 'running');
+
+  if (runningTimers.length === 0) {
+    throw new Error('No running timer found for this task');
+  }
+
+  const now = new Date().toISOString();
+
+  await Promise.all(
+    runningTimers.map((timer: any) => {
+      const elapsed = Math.floor((Date.now() - new Date(timer.started_at).getTime()) / 1000);
+      return updateTimer(timer.id, {
+        status: 'paused',
+        stopped_at: now,
+        duration_seconds: timer.duration_seconds + elapsed,
+      });
+    })
+  );
+
   await updateTask(taskId, { status: 'paused' });
-  // Find team member from task
-  const { data: task } = await supabase.from('tasks').select('assigned_team_member_id').eq('id', taskId).single();
+
+  const { data: task, error: taskError } = await supabase
+    .from('tasks')
+    .select('assigned_team_member_id')
+    .eq('id', taskId)
+    .single();
+
+  if (taskError) throw taskError;
   if (task?.assigned_team_member_id) await updateTeamMember(task.assigned_team_member_id, { status: 'paused' });
+
   await logActivity({ user_id: userId, action: 'timer_paused', details: { task_id: taskId }, organization_id: orgId });
 };
 
 export const stopTimerOp = async (taskId: string, orgId: string, userId: string) => {
-  const { data: timer } = await supabase
-    .from('timers')
-    .select('*')
-    .eq('task_id', taskId)
-    .neq('status', 'stopped')
-    .maybeSingle();
-  if (!timer) return;
-  let totalSec = timer.duration_seconds;
-  if (timer.status === 'running') {
-    totalSec += Math.floor((Date.now() - new Date(timer.started_at).getTime()) / 1000);
+  const openTimers = await fetchOpenTimersForTask(taskId);
+
+  if (openTimers.length === 0) {
+    throw new Error('No active timer found for this task');
   }
-  await updateTimer(timer.id, { status: 'stopped', stopped_at: new Date().toISOString(), duration_seconds: totalSec });
+
+  const now = new Date().toISOString();
+
+  const durationTotals = openTimers.map((timer: any) => {
+    let totalSec = timer.duration_seconds;
+    if (timer.status === 'running') {
+      totalSec += Math.floor((Date.now() - new Date(timer.started_at).getTime()) / 1000);
+    }
+    return { id: timer.id, totalSec };
+  });
+
+  await Promise.all(
+    durationTotals.map((entry) =>
+      updateTimer(entry.id, {
+        status: 'stopped',
+        stopped_at: now,
+        duration_seconds: entry.totalSec,
+      })
+    )
+  );
+
+  const totalDuration = durationTotals.reduce((sum, entry) => sum + entry.totalSec, 0);
+
   await updateTask(taskId, { status: 'completed' });
-  const { data: task } = await supabase.from('tasks').select('assigned_team_member_id').eq('id', taskId).single();
+  const { data: task, error: taskError } = await supabase.from('tasks').select('assigned_team_member_id').eq('id', taskId).single();
+  if (taskError) throw taskError;
   if (task?.assigned_team_member_id) await updateTeamMember(task.assigned_team_member_id, { status: 'idle' });
-  await logActivity({ user_id: userId, action: 'timer_stopped', details: { task_id: taskId, duration_seconds: totalSec }, organization_id: orgId });
+  await logActivity({ user_id: userId, action: 'timer_stopped', details: { task_id: taskId, duration_seconds: totalDuration }, organization_id: orgId });
 };
 
 // ---- Helpers ----
