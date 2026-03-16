@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   fetchTeamMembers, fetchVAs, fetchTeamMember, fetchTasks, fetchTimers,
   fetchActivityLogs, addTeamMember, addTask, logActivity,
-  startTimerOp, pauseTimerOp, stopTimerOp,
+  startTimerOp, pauseTimerOp, stopTimerOp, deleteTask, updateTask,
 } from '@/lib/store';
 
 export function useTeamMembers() {

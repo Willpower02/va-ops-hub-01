@@ -123,6 +123,20 @@ export const updateTask = async (id: string, updates: Record<string, any>) => {
   if (error) throw error;
 };
 
+export const deleteTask = async (id: string) => {
+  // Delete associated timers first
+  const { error: timerError } = await supabase
+    .from('timers')
+    .delete()
+    .eq('task_id', id);
+  if (timerError) throw timerError;
+  const { error } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+};
+
 export const addTimer = async (timer: {
   task_id: string;
   started_at: string;
