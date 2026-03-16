@@ -33,7 +33,7 @@ export function VACard({ va, index, timers, tasks }: VACardProps) {
   const [elapsed, setElapsed] = useState(0);
 
   const vaTasks = tasks.filter((t: any) => t.assigned_team_member_id === va.id);
-  const activeTask = vaTasks.find((t: any) => t.status === 'active');
+  const activeTask = vaTasks.find((t: any) => t.status === 'active' || t.status === 'running');
   const pendingCount = vaTasks.filter((t: any) => t.status === 'pending').length;
   const completedCount = vaTasks.filter((t: any) => t.status === 'completed').length;
 

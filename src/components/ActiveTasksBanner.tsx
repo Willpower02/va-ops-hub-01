@@ -11,7 +11,7 @@ interface ActiveTasksBannerProps {
 export function ActiveTasksBanner({ tasks, timers, vas }: ActiveTasksBannerProps) {
   const [, setTick] = useState(0);
 
-  const activeTasks = tasks.filter((t: any) => t.status === 'active');
+  const activeTasks = tasks.filter((t: any) => t.status === 'active' || t.status === 'running');
   const activeTimers = activeTasks
     .map((task: any) => {
       const timer = timers.find((t: any) => t.task_id === task.id && t.status === 'running');
