@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Pause, Play, Trash2, Square, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTasks, useVAs, useTimers } from '@/hooks/use-data';
+import { useTasks, useVAs, useTimers, useTimerControls, useDeleteTask } from '@/hooks/use-data';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
 import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
@@ -24,12 +26,15 @@ export default function TasksPage() {
   const [vaFilter, setVaFilter] = useState('all');
   const [tick, setTick] = useState(0);
   const [searchParams] = useSearchParams();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
 
   const { data: allTasks = [] } = useTasks();
   const { data: vas = [] } = useVAs();
   const { data: timers = [] } = useTimers();
+  const timerControls = useTimerControls();
+  const deleteTaskMutation = useDeleteTask();
 
-  // Map query param "running" to the tab value "active"
   const statusParam = searchParams.get('status');
   const defaultTab = statusParam === 'running' ? 'active' : 'pending';
 
@@ -37,6 +42,63 @@ export default function TasksPage() {
     const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const setLoading = (taskId: string, loading: boolean) =>
+    setActionLoading(prev => ({ ...prev, [taskId]: loading }));
+
+  const handlePause = async (task: any) => {
+    setLoading(task.id, true);
+    try {
+      await timerControls.pause.mutateAsync(task.id);
+      toast.success('Task paused');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to pause task');
+    } finally {
+      setLoading(task.id, false);
+    }
+  };
+
+  const handleResume = async (task: any) => {
+    if (!task.assigned_team_member_id) {
+      toast.error('No team member assigned');
+      return;
+    }
+    setLoading(task.id, true);
+    try {
+      await timerControls.start.mutateAsync({ taskId: task.id, teamMemberId: task.assigned_team_member_id });
+      toast.success('Task resumed');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to resume task');
+    } finally {
+      setLoading(task.id, false);
+    }
+  };
+
+  const handleStop = async (task: any) => {
+    setLoading(task.id, true);
+    try {
+      await timerControls.stop.mutateAsync(task.id);
+      toast.success('Task completed');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to stop task');
+    } finally {
+      setLoading(task.id, false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setLoading(deleteTarget.id, true);
+    try {
+      await deleteTaskMutation.mutateAsync(deleteTarget.id);
+      toast.success('Task deleted');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete task');
+    } finally {
+      setLoading(deleteTarget.id, false);
+      setDeleteTarget(null);
+    }
+  };
 
   const filterTasks = (status: string) =>
     allTasks.filter((t: any) => {
@@ -52,6 +114,8 @@ export default function TasksPage() {
     const va = vas.find((v: any) => v.id === task.assigned_team_member_id);
     const timer = timers.find((t: any) => t.task_id === task.id && t.status !== 'stopped');
     const elapsed = timer ? getElapsedSeconds(timer) : 0;
+    const isLoading = actionLoading[task.id] || false;
+
     return (
       <div key={task.id} className="glass-card rounded-xl p-4 flex items-center gap-4">
         <div className="flex-1 min-w-0">
@@ -64,9 +128,41 @@ export default function TasksPage() {
             {task.due_date && <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>}
           </div>
         </div>
+
         {timer && timer.status === 'running' && (
           <span className="font-bold text-success text-lg timer-digits">{formatTime(elapsed)}</span>
         )}
+        {timer && timer.status === 'paused' && (
+          <span className="font-medium text-muted-foreground text-lg timer-digits">{formatTime(elapsed)}</span>
+        )}
+
+        <div className="flex items-center gap-1 shrink-0">
+          {task.status === 'active' && (
+            <>
+              <Button size="icon" variant="ghost" onClick={() => handlePause(task)} disabled={isLoading} title="Pause">
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />}
+              </Button>
+              <Button size="icon" variant="ghost" onClick={() => handleStop(task)} disabled={isLoading} title="Complete">
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Square className="h-4 w-4" />}
+              </Button>
+            </>
+          )}
+          {task.status === 'paused' && (
+            <Button size="icon" variant="ghost" onClick={() => handleResume(task)} disabled={isLoading} title="Resume">
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+            </Button>
+          )}
+          {task.status === 'pending' && task.assigned_team_member_id && (
+            <Button size="icon" variant="ghost" onClick={() => handleResume(task)} disabled={isLoading} title="Start">
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+            </Button>
+          )}
+          {task.status !== 'completed' && (
+            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ id: task.id, title: task.title })} disabled={isLoading} title="Delete">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     );
   };
@@ -116,6 +212,23 @@ export default function TasksPage() {
       </Tabs>
 
       <CreateTaskModal open={createOpen} onClose={() => setCreateOpen(false)} />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteTarget?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
