@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   fetchTeamMembers, fetchVAs, fetchTeamMember, fetchTasks, fetchTimers,
   fetchActivityLogs, addTeamMember, addTask, logActivity,
-  startTimerOp, pauseTimerOp, stopTimerOp,
+  startTimerOp, pauseTimerOp, stopTimerOp, deleteTask, updateTask,
 } from '@/lib/store';
 
 export function useTeamMembers() {
@@ -177,4 +177,34 @@ export function useTimerControls() {
     onSuccess: invalidate,
   });
   return { start, pause, stop };
+}
+
+export function useDeleteTask() {
+  const qc = useQueryClient();
+  const { orgId, session } = useAuth();
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      await deleteTask(taskId);
+      await logActivity({ user_id: session!.user.id, action: 'task_deleted', details: { task_id: taskId }, organization_id: orgId! });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timers'] });
+      qc.invalidateQueries({ queryKey: ['vas'] });
+      qc.invalidateQueries({ queryKey: ['team_members'] });
+      qc.invalidateQueries({ queryKey: ['activity_logs'] });
+    },
+  });
+}
+
+export function useUpdateTaskStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ taskId, status }: { taskId: string; status: string }) => {
+      await updateTask(taskId, { status });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
 }
