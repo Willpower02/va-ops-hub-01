@@ -7,7 +7,6 @@ import {
   fetchActivityLogs, addTeamMember, addTask, logActivity,
   startTimerOp, pauseTimerOp, stopTimerOp, deleteTask, updateTask,
 } from '@/lib/store';
-import { supabase } from '@/integrations/supabase/client';
 
 export function useTeamMembers() {
   const { orgId } = useAuth();
