@@ -14,27 +14,22 @@ export default function ResetPasswordPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash');
     const type = params.get('type');
 
-    if (type === 'recovery' && accessToken) {
-      // Set the session from the hash tokens so updateUser works
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken || '',
-      }).then(({ error }) => {
-        if (error) {
-          console.error('[ResetPassword] Failed to set session:', error.message);
-          toast.error('Invalid or expired reset link');
-        } else {
-          setReady(true);
-        }
-      });
+    if (type === 'recovery' && tokenHash) {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+        .then(({ error }) => {
+          if (error) {
+            console.error('[ResetPassword] OTP verification failed:', error.message);
+            toast.error('Invalid or expired reset link');
+          } else {
+            setReady(true);
+          }
+        });
     } else {
-      // Also listen for PASSWORD_RECOVERY event as fallback
+      // Fallback: listen for PASSWORD_RECOVERY event
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
         if (event === 'PASSWORD_RECOVERY') {
           setReady(true);
