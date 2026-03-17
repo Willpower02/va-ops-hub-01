@@ -14,20 +14,34 @@ export default function ResetPasswordPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event from the URL hash
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setReady(true);
-      }
-    });
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const type = params.get('type');
 
-    // Also check if we already have a recovery session
-    const hash = window.location.hash;
-    if (hash.includes('type=recovery')) {
-      setReady(true);
+    if (type === 'recovery' && accessToken) {
+      // Set the session from the hash tokens so updateUser works
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken || '',
+      }).then(({ error }) => {
+        if (error) {
+          console.error('[ResetPassword] Failed to set session:', error.message);
+          toast.error('Invalid or expired reset link');
+        } else {
+          setReady(true);
+        }
+      });
+    } else {
+      // Also listen for PASSWORD_RECOVERY event as fallback
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setReady(true);
+        }
+      });
+      return () => subscription.unsubscribe();
     }
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,9 +58,9 @@ export default function ResetPasswordPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      toast.success('Password updated successfully! Please sign in.');
+      toast.success('Password updated successfully! Redirecting to sign in...');
       await supabase.auth.signOut();
-      navigate('/', { replace: true });
+      setTimeout(() => navigate('/', { replace: true }), 2000);
     } catch (err: any) {
       toast.error(err.message || 'Failed to update password');
     } finally {
