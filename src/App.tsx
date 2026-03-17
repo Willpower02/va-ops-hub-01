@@ -14,6 +14,7 @@ import TeamPage from "./pages/Team";
 import ReportsPage from "./pages/Reports";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import ResetPasswordPage from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -48,7 +49,12 @@ function AppRoutes() {
   // 2. No session → auth page
   if (!session) {
     console.log('[Router] → /auth | reason: no active session');
-    return <AuthPage />;
+    return (
+      <Routes>
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="*" element={<AuthPage />} />
+      </Routes>
+    );
   }
 
   // 3. Session exists but there was a profile/data error → show error, NOT login
