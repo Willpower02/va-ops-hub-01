@@ -1,105 +1,112 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-export default function ResetPasswordPage() {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
+export default function ResetPassword() {
   const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token_hash = params.get('token_hash');
-    const type = params.get('type');
+    const token_hash = params.get("token_hash");
+    const type = params.get("type");
 
-    if (token_hash && type === 'recovery') {
-      supabase.auth.verifyOtp({ token_hash, type: 'recovery' })
-        .then(({ error }) => {
-          if (error) {
-            toast.error('Invalid or expired reset link');
-          } else {
-            setReady(true);
-          }
-        });
+    console.log("[ResetPassword] token_hash:", token_hash, "type:", type);
+
+    if (token_hash && type === "recovery") {
+      supabase.auth.verifyOtp({ token_hash, type: "recovery" }).then(({ error }) => {
+        console.log("[ResetPassword] verifyOtp error:", error);
+        if (error) {
+          setError("This reset link is invalid or has expired. Please request a new one.");
+        } else {
+          setReady(true);
+        }
+      });
     } else {
-      toast.error('Invalid reset link');
+      setError("Invalid reset link. Please request a new one.");
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+  const handleSubmit = async () => {
+    if (password !== confirm) {
+      setError("Passwords do not match.");
       return;
     }
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters.");
       return;
     }
     setLoading(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      toast.success('Password updated successfully! Redirecting to sign in...');
-      await supabase.auth.signOut();
-      setTimeout(() => navigate('/', { replace: true }), 2000);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update password');
-    } finally {
-      setLoading(false);
+    setError("");
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess(true);
+      setTimeout(() => navigate("/"), 2000);
     }
   };
 
-  if (!ready) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, hsl(216 55% 8%) 0%, hsl(215 45% 14%) 50%, hsl(216 40% 10%) 100%)' }}>
-        <div className="w-full max-w-sm text-center space-y-4">
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center glow-border">
-              <span className="text-primary font-bold">VA</span>
-            </div>
-            <span className="font-bold text-foreground text-2xl tracking-tight">VA Tracker</span>
-          </div>
-          <div className="glass-card rounded-2xl p-6">
-            <p className="text-muted-foreground text-sm">Verifying your reset link...</p>
-            <p className="text-muted-foreground text-xs mt-2">If nothing happens, the link may be expired or invalid.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, hsl(216 55% 8%) 0%, hsl(215 45% 14%) 50%, hsl(216 40% 10%) 100%)' }}>
-      <div className="w-full max-w-sm animate-fade-in">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center glow-border">
-            <span className="text-primary font-bold">VA</span>
-          </div>
-          <span className="font-bold text-foreground text-2xl tracking-tight">VA Tracker</span>
-        </div>
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-foreground mb-4">Set New Password</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label className="text-muted-foreground">New Password</Label>
-              <Input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="bg-secondary/50 border-border/50" />
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Confirm Password</Label>
-              <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={6} className="bg-secondary/50 border-border/50" />
-            </div>
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 glow-border font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.01]" disabled={loading}>
-              {loading ? 'Updating...' : 'Update Password'}
-            </Button>
-          </form>
-        </div>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0b1120", color: "white" }}>
+      <div style={{ width: "100%", maxWidth: 400, padding: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24, textAlign: "center" }}>Reset Your Password</h1>
+
+        {!ready && !error && (
+          <p style={{ textAlign: "center", color: "#94a3b8" }}>Verifying your reset link...</p>
+        )}
+
+        {error && (
+          <p style={{ textAlign: "center", color: "#f87171" }}>{error}</p>
+        )}
+
+        {success && (
+          <p style={{ textAlign: "center", color: "#4ade80" }}>Password updated! Redirecting...</p>
+        )}
+
+        {ready && !success && (
+          <>
+            <input
+              type="password"
+              placeholder="New password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: "100%", padding: "10px 12px", borderRadius: 8,
+                border: "1px solid #334155", background: "#0f172a",
+                color: "white", marginBottom: 12, boxSizing: "border-box" as const
+              }}
+            />
+            <input
+              type="password"
+              placeholder="Confirm password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              style={{
+                width: "100%", padding: "10px 12px", borderRadius: 8,
+                border: "1px solid #334155", background: "#0f172a",
+                color: "white", marginBottom: 20, boxSizing: "border-box" as const
+              }}
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              style={{
+                width: "100%", padding: "12px", borderRadius: 8,
+                background: "#3b82f6", color: "white", fontWeight: 600,
+                border: "none", cursor: loading ? "not-allowed" : "pointer"
+              }}
+            >
+              {loading ? "Updating..." : "Update Password"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
