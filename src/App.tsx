@@ -49,7 +49,12 @@ function AppRoutes() {
   // 2. No session → auth page
   if (!session) {
     console.log('[Router] → /auth | reason: no active session');
-    return <AuthPage />;
+    return (
+      <Routes>
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="*" element={<AuthPage />} />
+      </Routes>
+    );
   }
 
   // 3. Session exists but there was a profile/data error → show error, NOT login

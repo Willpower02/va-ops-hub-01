@@ -71,6 +71,41 @@ export default function AuthPage() {
     return <LandingPage onGetStarted={() => setShowAuth(true)} />;
   }
 
+  if (showForgot) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, hsl(216 55% 8%) 0%, hsl(215 45% 14%) 50%, hsl(216 40% 10%) 100%)' }}>
+        <div className="w-full max-w-sm animate-fade-in">
+          <button
+            onClick={() => setShowForgot(false)}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Sign In
+          </button>
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center glow-border">
+              <span className="text-primary font-bold">VA</span>
+            </div>
+            <span className="font-bold text-foreground text-2xl tracking-tight">VA Tracker</span>
+          </div>
+          <div className="glass-card rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-foreground mb-2">Reset Password</h2>
+            <p className="text-sm text-muted-foreground mb-4">Enter your email and we'll send you a reset link.</p>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div>
+                <Label className="text-muted-foreground">Email</Label>
+                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="bg-secondary/50 border-border/50" />
+              </div>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 glow-border font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.01]" disabled={loading}>
+                {loading ? 'Sending...' : 'Send Reset Link'}
+              </Button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, hsl(216 55% 8%) 0%, hsl(215 45% 14%) 50%, hsl(216 40% 10%) 100%)' }}>
       <div className="w-full max-w-sm animate-fade-in">
@@ -114,6 +149,15 @@ export default function AuthPage() {
             <div>
               <Label className="text-muted-foreground">Password</Label>
               <Input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="bg-secondary/50 border-border/50" />
+              {isLogin && (
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(true)}
+                  className="text-xs text-primary hover:underline mt-1.5 block"
+                >
+                  Forgot password?
+                </button>
+              )}
             </div>
             <Button
               type="submit"
