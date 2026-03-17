@@ -46,6 +46,27 @@ export default function AuthPage() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://vatrackr.com/reset-password',
+      });
+      if (error) throw error;
+      toast.success('Password reset link sent! Check your email.');
+      setShowForgot(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send reset link');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!showAuth) {
     return <LandingPage onGetStarted={() => setShowAuth(true)} />;
   }
