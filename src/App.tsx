@@ -21,6 +21,16 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   const { session, profile, orgId, role, loading, authError } = useAuth();
 
+  // Check if we're on /reset-password — this route is ALWAYS public
+  const isResetPasswordRoute = window.location.pathname === '/reset-password';
+  if (isResetPasswordRoute) {
+    return (
+      <Routes>
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+      </Routes>
+    );
+  }
+
   console.log('[Router] state:', {
     hasSession: !!session,
     userId: session?.user?.id ?? null,
@@ -51,7 +61,6 @@ function AppRoutes() {
     console.log('[Router] → /auth | reason: no active session');
     return (
       <Routes>
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<AuthPage />} />
       </Routes>
     );
