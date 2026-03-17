@@ -15,27 +15,20 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const tokenHash = params.get('token_hash');
+    const token_hash = params.get('token_hash');
     const type = params.get('type');
 
-    if (type === 'recovery' && tokenHash) {
-      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+    if (token_hash && type === 'recovery') {
+      supabase.auth.verifyOtp({ token_hash, type: 'recovery' })
         .then(({ error }) => {
           if (error) {
-            console.error('[ResetPassword] OTP verification failed:', error.message);
             toast.error('Invalid or expired reset link');
           } else {
             setReady(true);
           }
         });
     } else {
-      // Fallback: listen for PASSWORD_RECOVERY event
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          setReady(true);
-        }
-      });
-      return () => subscription.unsubscribe();
+      toast.error('Invalid reset link');
     }
   }, []);
 
