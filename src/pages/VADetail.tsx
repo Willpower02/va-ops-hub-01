@@ -35,6 +35,20 @@ export default function VADetail() {
     return () => clearInterval(interval);
   }, []);
 
+  const confirmStop = async (notes: string) => {
+    if (!stopTarget) return;
+    setStopLoading(true);
+    try {
+      await timerControls.stop.mutateAsync({ taskId: stopTarget, notes: notes || undefined });
+      toast.success('Task completed');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to stop task');
+    } finally {
+      setStopLoading(false);
+      setStopTarget(null);
+    }
+  };
+
   if (!va) return <div className="p-8 text-center text-muted-foreground">VA not found</div>;
 
   const tasks = allTasks.filter((t: any) => t.assigned_team_member_id === va.id);
