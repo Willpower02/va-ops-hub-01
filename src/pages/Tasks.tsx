@@ -272,6 +272,13 @@ export default function TasksPage() {
 
       <CreateTaskModal open={createOpen} onClose={() => setCreateOpen(false)} />
 
+      <CompleteTaskModal
+        open={!!stopTarget}
+        onClose={() => setStopTarget(null)}
+        onConfirm={confirmStop}
+        loading={stopTarget ? actionLoading[stopTarget.id] : false}
+      />
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
