@@ -4,9 +4,11 @@ import { ArrowLeft, Play, Pause, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CompleteTaskModal } from '@/components/CompleteTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMember, useTasks, useTimers, useTimerControls } from '@/hooks/use-data';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
+import { toast } from 'sonner';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
