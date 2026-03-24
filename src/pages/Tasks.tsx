@@ -161,10 +161,10 @@ export default function TasksPage() {
                 </span>
               )}
               {isTaskOverdue(task) && (
-                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>
+                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 animate-pulse">Overdue</Badge>
               )}
-              {!isTaskOverdue(task) && isTaskDueSoon(task) && (
-                <Badge className="bg-warning/20 text-warning border-warning/30 text-[10px] px-1.5 py-0">Due Soon</Badge>
+              {!isTaskOverdue(task) && isTaskDueNow(task) && (
+                <Badge className="bg-warning/20 text-warning border-warning/30 text-[10px] px-1.5 py-0">Due Now</Badge>
               )}
             </div>
             {(() => {
