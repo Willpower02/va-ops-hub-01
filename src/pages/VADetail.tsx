@@ -25,6 +25,7 @@ export default function VADetail() {
   const [tick, setTick] = useState(0);
   const [stopTarget, setStopTarget] = useState<string | null>(null);
   const [stopLoading, setStopLoading] = useState(false);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   const { data: va } = useTeamMember(id);
   const { data: allTasks = [] } = useTasks();
