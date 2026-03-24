@@ -1,6 +1,7 @@
-import { Users, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Users, Clock, CheckCircle, AlertTriangle, AlertOctagon } from 'lucide-react';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
 import { useNavigate } from 'react-router-dom';
+import { isTaskOverdue } from '@/hooks/use-task-notifications';
 
 interface DashboardStatsProps {
   vas: any[];
