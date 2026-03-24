@@ -37,6 +37,7 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
         priority,
         status: startImmediately ? 'active' : 'pending',
         due_date: dueDate || undefined,
+        due_time: dueTime || undefined,
         category: category || undefined,
         startTimer: startImmediately,
       });
