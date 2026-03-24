@@ -1,4 +1,4 @@
-import { LayoutDashboard, ListTodo, Users, BarChart3, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Users, BarChart3, Settings, LogOut, BookOpen } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
