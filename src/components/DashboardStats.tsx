@@ -83,7 +83,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
       {stats.map((stat) => (
         <button
           key={stat.label}
