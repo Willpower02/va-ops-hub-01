@@ -89,8 +89,6 @@ export default function VADetail() {
                           <Square className="h-3 w-3" />
                         </Button>
                       )}
-                        </Button>
-                      )}
                     </div>
                   )}
                 </div>
