@@ -32,13 +32,26 @@ const STATUS_OPTIONS = ['all', 'active', 'idle', 'offline', 'pending'] as const;
 export default function TeamPage() {
   const { can } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const { data: users = [] } = useTeamMembers();
+  const { data: sub } = useSubscription();
+  const maxVAs = useMaxVAs();
+  const trialDaysLeft = useTrialDaysLeft();
+  const vaCount = users.filter((u: any) => u.role === 'va').length;
   const [searchParams, setSearchParams] = useSearchParams();
   const statusFilter = searchParams.get('status') || 'all';
   const resendInvite = useResendInvite();
   const deleteTeamMember = useDeleteTeamMember();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleInviteClick = () => {
+    if (maxVAs !== null && vaCount >= maxVAs) {
+      setUpgradeOpen(true);
+    } else {
+      setAddOpen(true);
+    }
+  };
 
   if (!can('viewTeam')) {
     return <Navigate to="/tasks" replace />;
