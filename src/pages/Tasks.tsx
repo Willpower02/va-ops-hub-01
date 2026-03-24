@@ -39,7 +39,7 @@ export default function TasksPage() {
   const [searchParams] = useSearchParams();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
-
+  const [stopTarget, setStopTarget] = useState<{ id: string } | null>(null);
   const { data: allTasks = [] } = useTasks();
   const { data: vas = [] } = useVAs();
   const { data: timers = [] } = useTimers();
