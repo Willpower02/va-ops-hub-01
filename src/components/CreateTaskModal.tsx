@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useVAs, useAddTask } from '@/hooks/use-data';
 import { toast } from 'sonner';
+import { TASK_CATEGORIES } from '@/lib/constants';
 
 interface Props { open: boolean; onClose: () => void; preselectedVaId?: string; }
 
@@ -16,6 +17,7 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
   const [description, setDescription] = useState('');
   const [vaId, setVaId] = useState(preselectedVaId || '');
   const [priority, setPriority] = useState('medium');
+  const [category, setCategory] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [startImmediately, setStartImmediately] = useState(false);
   const [error, setError] = useState('');
@@ -34,10 +36,11 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
         priority,
         status: startImmediately ? 'active' : 'pending',
         due_date: dueDate || undefined,
+        category: category || undefined,
         startTimer: startImmediately,
       });
       setTitle(''); setDescription(''); setVaId(preselectedVaId || ''); setPriority('medium');
-      setDueDate(''); setStartImmediately(false); setError('');
+      setCategory(''); setDueDate(''); setStartImmediately(false); setError('');
       toast.success('Task created!');
       onClose();
     } catch (err: any) {
@@ -75,6 +78,15 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div>
+            <Label className="text-muted-foreground">Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Select category" /></SelectTrigger>
+              <SelectContent>
+                {TASK_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <div><Label className="text-muted-foreground">Due Date</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="bg-secondary/50 border-border/50" /></div>
           <div className="flex items-center gap-2">

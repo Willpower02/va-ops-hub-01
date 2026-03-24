@@ -167,6 +167,7 @@ export type Database = {
       tasks: {
         Row: {
           assigned_team_member_id: string | null
+          category: string | null
           created_at: string
           description: string
           due_date: string | null
@@ -178,6 +179,7 @@ export type Database = {
         }
         Insert: {
           assigned_team_member_id?: string | null
+          category?: string | null
           created_at?: string
           description?: string
           due_date?: string | null
@@ -189,6 +191,7 @@ export type Database = {
         }
         Update: {
           assigned_team_member_id?: string | null
+          category?: string | null
           created_at?: string
           description?: string
           due_date?: string | null

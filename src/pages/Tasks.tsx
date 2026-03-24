@@ -21,6 +21,7 @@ import { useTasks, useVAs, useTimers, useTimerControls, useDeleteTask } from '@/
 import { getElapsedSeconds, formatTime } from '@/lib/store';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { TASK_CATEGORIES, CATEGORY_COLORS } from '@/lib/constants';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
@@ -37,6 +38,7 @@ export default function TasksPage() {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [vaFilter, setVaFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [, setTick] = useState(0);
   const [searchParams] = useSearchParams();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
@@ -127,6 +129,7 @@ export default function TasksPage() {
       if (normalizeTaskStatus(t.status) !== status) return false;
       if (priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
       if (vaFilter !== 'all' && t.assigned_team_member_id !== vaFilter) return false;
+      if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
       return true;
     });
 
@@ -148,6 +151,11 @@ export default function TasksPage() {
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>
                 {task.priority}
               </span>
+              {task.category && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[task.category] || CATEGORY_COLORS['Other']}`}>
+                  {task.category}
+                </span>
+              )}
             </div>
             {(() => {
               const stoppedTimer = timers.find((t: any) => t.task_id === task.id && t.status === 'stopped' && t.notes);
@@ -227,7 +235,7 @@ export default function TasksPage() {
         )}
       </div>
 
-      <div className="flex gap-3 mb-4">
+      <div className="flex gap-3 mb-4 flex-wrap">
         <Select value={priorityFilter} onValueChange={setPriorityFilter}>
           <SelectTrigger className="w-36 bg-secondary/50 border-border/50">
             <SelectValue placeholder="Priority" />
@@ -238,6 +246,18 @@ export default function TasksPage() {
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="high">High</SelectItem>
             <SelectItem value="urgent">Urgent</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-44 bg-secondary/50 border-border/50">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {TASK_CATEGORIES.map(c => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
