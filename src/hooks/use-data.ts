@@ -35,10 +35,25 @@ export function useTeamMember(id: string | undefined) {
 }
 
 export function useTasks() {
-  const { orgId } = useAuth();
+  const { orgId, role, userEmail } = useAuth();
   return useQuery({
-    queryKey: ['tasks', orgId],
-    queryFn: () => fetchTasks(orgId!),
+    queryKey: ['tasks', orgId, role, userEmail],
+    queryFn: async () => {
+      const allTasks = await fetchTasks(orgId!);
+      if (role === 'va' && userEmail) {
+        const { data: teamMember } = await supabase
+          .from('team_members')
+          .select('id')
+          .eq('organization_id', orgId!)
+          .eq('email', userEmail)
+          .maybeSingle();
+        if (teamMember) {
+          return allTasks.filter(t => t.assigned_team_member_id === teamMember.id);
+        }
+        return [];
+      }
+      return allTasks;
+    },
     enabled: !!orgId,
   });
 }
