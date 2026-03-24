@@ -155,10 +155,16 @@ export default function TasksPage() {
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>
                 {task.priority}
               </span>
-              {task.category && (
+               {task.category && (
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[task.category] || CATEGORY_COLORS['Other']}`}>
                   {task.category}
                 </span>
+              )}
+              {isTaskOverdue(task) && (
+                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>
+              )}
+              {!isTaskOverdue(task) && isTaskDueSoon(task) && (
+                <Badge className="bg-warning/20 text-warning border-warning/30 text-[10px] px-1.5 py-0">Due Soon</Badge>
               )}
             </div>
             {(() => {
