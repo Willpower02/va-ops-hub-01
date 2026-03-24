@@ -30,6 +30,7 @@ export default function Dashboard() {
   const { data: tasks = [] } = useTasks();
 
   useIdleDetection();
+  useTaskNotifications(tasks);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
