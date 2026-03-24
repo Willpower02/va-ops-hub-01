@@ -17,6 +17,7 @@ import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPassword";
 import AcceptInvitePage from "./pages/AcceptInvite";
+import PricingPage from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
