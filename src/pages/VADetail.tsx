@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMember, useTasks, useTimers, useTimerControls } from '@/hooks/use-data';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
 import { toast } from 'sonner';
+import { CATEGORY_COLORS } from '@/lib/constants';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
