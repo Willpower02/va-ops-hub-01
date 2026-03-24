@@ -104,6 +104,7 @@ export const addTask = async (task: {
   priority: string;
   status: string;
   due_date?: string;
+  due_time?: string;
   category?: string;
   organization_id: string;
 }) => {
