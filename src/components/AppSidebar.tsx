@@ -14,7 +14,7 @@ const allNavItems = [
   { title: 'Team', url: '/team', icon: Users, permission: 'viewTeam' as const },
   { title: 'Journal', url: '/journal', icon: BookOpen, permission: 'viewJournal' as const },
   { title: 'Reports', url: '/reports', icon: BarChart3, permission: 'viewAnalytics' as const },
-  { title: 'Settings', url: '/settings', icon: Settings, permission: 'manageOrg' as const },
+  { title: 'Settings', url: '/settings', icon: Settings, permission: null },
 ];
 
 export function AppSidebar() {
