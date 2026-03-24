@@ -85,8 +85,10 @@ export default function VADetail() {
                         </Button>
                       )}
                       {timer && timer.status !== 'stopped' && (
-                        <Button size="sm" variant="outline" onClick={() => timerControls.stop.mutate(task.id)}>
+                        <Button size="sm" variant="outline" onClick={() => setStopTarget(task.id)}>
                           <Square className="h-3 w-3" />
+                        </Button>
+                      )}
                         </Button>
                       )}
                     </div>
