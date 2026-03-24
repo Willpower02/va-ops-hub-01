@@ -15,6 +15,7 @@ import ReportsPage from "./pages/Reports";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPassword";
+import AcceptInvitePage from "./pages/AcceptInvite";
 
 const queryClient = new QueryClient();
 

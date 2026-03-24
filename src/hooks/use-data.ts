@@ -114,23 +114,14 @@ export function useAddTeamMember() {
 
 export function useInviteTeamMember() {
   const qc = useQueryClient();
-  const { orgId } = useAuth();
   return useMutation({
     mutationFn: async (member: { name: string; email: string; role: string }) => {
-      const { data, error } = await supabase
-        .from('team_members')
-        .insert({
-          organization_id: orgId!,
-          name: member.name,
-          email: member.email,
-          role: member.role,
-          invite_status: 'pending',
-          status: 'idle',
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
+      const { data, error } = await supabase.functions.invoke('invite-member', {
+        body: { name: member.name, email: member.email, role: member.role },
+      });
+      if (error) throw new Error(error.message || 'Failed to send invitation');
+      if (data?.error) throw new Error(data.error);
+      return data.member;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['team_members'] });
