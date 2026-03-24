@@ -40,10 +40,6 @@ export default function JournalPage() {
   const { data: vas = [] } = useVAs();
   const { data: tasks = [] } = useTasks();
 
-  if (!can('viewJournal')) {
-    return <Navigate to="/tasks" replace />;
-  }
-
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
   const entries = useMemo(() => {
