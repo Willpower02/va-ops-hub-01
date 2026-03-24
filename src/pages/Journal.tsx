@@ -87,6 +87,10 @@ export default function JournalPage() {
       });
   }, [logs, tasks, vas, selectedDateStr, vaFilter, actionFilter]);
 
+  if (!can('viewJournal')) {
+    return <Navigate to="/tasks" replace />;
+  }
+
   const handleExport = () => {
     const rows = [['Time', 'VA Name', 'Action', 'Task', 'Duration', 'Notes']];
     entries.forEach((e) => {
