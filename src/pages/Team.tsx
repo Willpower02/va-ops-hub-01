@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Plus, RotateCw, Trash2, Loader2 } from 'lucide-react';
+import { Plus, RotateCw, Trash2, Loader2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,8 +14,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { AddMemberModal } from '@/components/AddMemberModal';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembers, useResendInvite, useDeleteTeamMember } from '@/hooks/use-data';
+import { useSubscription, useMaxVAs, useTrialDaysLeft } from '@/hooks/use-subscription';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
