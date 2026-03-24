@@ -42,7 +42,7 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
         startTimer: startImmediately,
       });
       setTitle(''); setDescription(''); setVaId(preselectedVaId || ''); setPriority('medium');
-      setCategory(''); setDueDate(''); setStartImmediately(false); setError('');
+      setCategory(''); setDueDate(''); setDueTime(''); setStartImmediately(false); setError('');
       toast.success('Task created!');
       onClose();
     } catch (err: any) {
