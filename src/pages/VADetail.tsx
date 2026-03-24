@@ -77,7 +77,7 @@ export default function VADetail() {
         return (
           <div key={task.id} className="bg-card rounded-lg border p-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
+              <div className="flex-1 cursor-pointer" onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-medium text-card-foreground">{task.title}</h4>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>{task.priority}</span>
@@ -89,35 +89,38 @@ export default function VADetail() {
                 })()}
                 {task.due_date && <p className="text-xs text-muted-foreground mt-1">Due: {new Date(task.due_date).toLocaleDateString()}</p>}
               </div>
-              {showTimer && (
-                <div className="text-right shrink-0">
-                  <p className="text-xl font-mono font-bold text-success">{formatTime(elapsed)}</p>
-                  {can('controlTimers') && (
-                    <div className="flex gap-1 mt-2 justify-end">
-                      {(!timer || timer.status === 'paused') && (
-                        <Button size="sm" variant="outline" onClick={() => timerControls.start.mutate({ taskId: task.id, teamMemberId: va.id })}>
-                          <Play className="h-3 w-3" />
-                        </Button>
-                      )}
-                      {timer?.status === 'running' && (
-                        <Button size="sm" variant="outline" onClick={() => timerControls.pause.mutate(task.id)}>
-                          <Pause className="h-3 w-3" />
-                        </Button>
-                      )}
-                      {timer && timer.status !== 'stopped' && (
-                        <Button size="sm" variant="outline" onClick={() => setStopTarget(task.id)}>
-                          <Square className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="text-right shrink-0">
+                {showTimer && (
+                  <>
+                    <p className="text-xl font-mono font-bold text-success">{formatTime(elapsed)}</p>
+                    {can('controlTimers') && (
+                      <div className="flex gap-1 mt-2 justify-end">
+                        {(!timer || timer.status === 'paused') && (
+                          <Button size="sm" variant="outline" onClick={() => timerControls.start.mutate({ taskId: task.id, teamMemberId: va.id })}>
+                            <Play className="h-3 w-3" />
+                          </Button>
+                        )}
+                        {timer?.status === 'running' && (
+                          <Button size="sm" variant="outline" onClick={() => timerControls.pause.mutate(task.id)}>
+                            <Pause className="h-3 w-3" />
+                          </Button>
+                        )}
+                        {timer && timer.status !== 'stopped' && (
+                          <Button size="sm" variant="outline" onClick={() => setStopTarget(task.id)}>
+                            <Square className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+                <Button size="icon" variant="ghost" className="mt-1" onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)} title="Comments">
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
+            {expandedTaskId === task.id && <TaskComments taskId={task.id} />}
           </div>
-        );
-      })}
-    </div>
   );
 
   return (
