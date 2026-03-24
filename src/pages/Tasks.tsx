@@ -140,70 +140,78 @@ export default function TasksPage() {
     const taskStatus = normalizeTaskStatus(task.status);
 
     return (
-      <div key={task.id} className="glass-card rounded-xl p-4 flex items-center gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="font-medium text-foreground">{task.title}</h4>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>
-              {task.priority}
-            </span>
+      <div key={task.id} className="glass-card rounded-xl p-4">
+        <div className="flex items-center gap-4">
+          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-medium text-foreground">{task.title}</h4>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>
+                {task.priority}
+              </span>
+            </div>
+            {(() => {
+              const stoppedTimer = timers.find((t: any) => t.task_id === task.id && t.status === 'stopped' && t.notes);
+              return stoppedTimer ? (
+                <p className="text-xs text-muted-foreground mt-1 italic">{stoppedTimer.notes}</p>
+              ) : null;
+            })()}
+            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+              <span>{va ? va.name : 'Unassigned'}</span>
+              {task.due_date && <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>}
+            </div>
           </div>
-          {(() => {
-            const stoppedTimer = timers.find((t: any) => t.task_id === task.id && t.status === 'stopped' && t.notes);
-            return stoppedTimer ? (
-              <p className="text-xs text-muted-foreground mt-1 italic">{stoppedTimer.notes}</p>
-            ) : null;
-          })()}
-          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-            <span>{va ? va.name : 'Unassigned'}</span>
-            {task.due_date && <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>}
+
+          {timer && timer.status === 'running' && (
+            <span className="font-bold text-success text-lg timer-digits">{formatTime(elapsed)}</span>
+          )}
+          {timer && timer.status === 'paused' && (
+            <span className="font-medium text-muted-foreground text-lg timer-digits">{formatTime(elapsed)}</span>
+          )}
+
+          <div className="flex items-center gap-1 shrink-0">
+            <Button size="icon" variant="ghost" onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)} title="Comments">
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+
+            {taskStatus === 'active' && (
+              <>
+                <Button size="icon" variant="ghost" onClick={() => handlePause(task)} disabled={isLoading} title="Pause">
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />}
+                </Button>
+                <Button size="icon" variant="ghost" onClick={() => handleStop(task)} disabled={isLoading} title="Complete">
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Square className="h-4 w-4" />}
+                </Button>
+              </>
+            )}
+
+            {taskStatus === 'paused' && (
+              <Button size="icon" variant="ghost" onClick={() => handleResume(task)} disabled={isLoading} title="Resume">
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+              </Button>
+            )}
+
+            {taskStatus === 'pending' && task.assigned_team_member_id && (
+              <Button size="icon" variant="ghost" onClick={() => handleResume(task)} disabled={isLoading} title="Start">
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+              </Button>
+            )}
+
+            {taskStatus !== 'completed' && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setDeleteTarget({ id: task.id, title: task.title })}
+                disabled={isLoading}
+                title="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 
-        {timer && timer.status === 'running' && (
-          <span className="font-bold text-success text-lg timer-digits">{formatTime(elapsed)}</span>
-        )}
-        {timer && timer.status === 'paused' && (
-          <span className="font-medium text-muted-foreground text-lg timer-digits">{formatTime(elapsed)}</span>
-        )}
-
-        <div className="flex items-center gap-1 shrink-0">
-          {taskStatus === 'active' && (
-            <>
-              <Button size="icon" variant="ghost" onClick={() => handlePause(task)} disabled={isLoading} title="Pause">
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />}
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => handleStop(task)} disabled={isLoading} title="Complete">
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Square className="h-4 w-4" />}
-              </Button>
-            </>
-          )}
-
-          {taskStatus === 'paused' && (
-            <Button size="icon" variant="ghost" onClick={() => handleResume(task)} disabled={isLoading} title="Resume">
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            </Button>
-          )}
-
-          {taskStatus === 'pending' && task.assigned_team_member_id && (
-            <Button size="icon" variant="ghost" onClick={() => handleResume(task)} disabled={isLoading} title="Start">
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            </Button>
-          )}
-
-          {taskStatus !== 'completed' && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="text-destructive hover:text-destructive"
-              onClick={() => setDeleteTarget({ id: task.id, title: task.title })}
-              disabled={isLoading}
-              title="Delete"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        {expandedTaskId === task.id && <TaskComments taskId={task.id} />}
       </div>
     );
   };
