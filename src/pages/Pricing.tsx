@@ -92,8 +92,8 @@ export default function PricingPage() {
                 ))}
               </ul>
               <Button
-                className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
-                variant={plan.popular ? 'default' : 'outline'}
+                className="w-full"
+                variant="default"
                 onClick={() => window.open(plan.checkoutUrl, '_blank')}
               >
                 Get Started
