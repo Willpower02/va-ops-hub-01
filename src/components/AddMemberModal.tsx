@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useInviteTeamMember, useTeamMembers } from '@/hooks/use-data';
+import { useMaxVAs } from '@/hooks/use-subscription';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import { toast } from 'sonner';
 
 interface Props { open: boolean; onClose: () => void; }
@@ -15,10 +17,17 @@ export function AddMemberModal({ open, onClose }: Props) {
   const [role, setRole] = useState('va');
   const [error, setError] = useState('');
 
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const { data: members = [] } = useTeamMembers();
   const inviteMember = useInviteTeamMember();
+  const maxVAs = useMaxVAs();
+  const vaCount = members.filter((m: any) => m.role === 'va').length;
 
   const handleSave = async () => {
+    if (role === 'va' && maxVAs !== null && vaCount >= maxVAs) {
+      setShowUpgrade(true);
+      return;
+    }
     if (!name.trim() || !email.trim()) { setError('All fields are required'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Invalid email format'); return; }
     if (members.some((u: any) => u.email === email)) { setError('Email already exists'); return; }
@@ -33,6 +42,7 @@ export function AddMemberModal({ open, onClose }: Props) {
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md glass-card border-border/30">
         <DialogHeader><DialogTitle className="text-foreground">Invite Team Member</DialogTitle></DialogHeader>
@@ -60,5 +70,7 @@ export function AddMemberModal({ open, onClose }: Props) {
         </div>
       </DialogContent>
     </Dialog>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
+    </>
   );
 }

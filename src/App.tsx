@@ -17,6 +17,7 @@ import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPassword";
 import AcceptInvitePage from "./pages/AcceptInvite";
+import PricingPage from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,9 @@ function AppRoutes() {
   }
   if (pathname === '/accept-invite') {
     return <Routes><Route path="/accept-invite" element={<AcceptInvitePage />} /></Routes>;
+  }
+  if (pathname === '/pricing') {
+    return <Routes><Route path="/pricing" element={<PricingPage />} /></Routes>;
   }
 
   console.log('[Router] state:', {

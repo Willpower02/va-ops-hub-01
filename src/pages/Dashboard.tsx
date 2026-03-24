@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useVAs, useTimers, useTasks, useTeamMembers } from '@/hooks/use-data';
 import { useIdleDetection } from '@/hooks/use-idle-detection';
 import { Navigate } from 'react-router-dom';
+import { TrialBanner } from '@/components/TrialBanner';
 
 export default function Dashboard() {
   const { can } = useAuth();
@@ -56,6 +57,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5">
+      <TrialBanner />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Live Operations Dashboard</h1>

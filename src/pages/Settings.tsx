@@ -7,9 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/use-subscription';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 export default function SettingsPage() {
   const { userName, userEmail, role, can, profile, orgId, session } = useAuth();
+  const { data: sub } = useSubscription();
+  const navigate = useNavigate();
   const initials = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
 
   // Profile state
@@ -156,6 +161,40 @@ export default function SettingsPage() {
           </Button>
         </div>
       )}
+
+      {/* Billing */}
+      <div className="glass-card rounded-2xl p-6 space-y-4">
+        <h3 className="font-semibold text-foreground">Billing</h3>
+        {sub ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Current Plan:</span>
+              <Badge className="capitalize bg-primary/20 text-primary border-0">{sub.plan}</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Status:</span>
+              <Badge variant="outline" className="capitalize border-border/50">{sub.subscription_status}</Badge>
+            </div>
+            {sub.subscription_status === 'trialing' && sub.trial_ends_at && (
+              <p className="text-sm text-muted-foreground">
+                Trial ends: {format(new Date(sub.trial_ends_at), 'MMM d, yyyy')}
+              </p>
+            )}
+            {(sub.plan === 'trial' || sub.plan === 'starter') && (
+              <Button onClick={() => navigate('/pricing')} className="bg-primary hover:bg-primary/90">
+                Upgrade Plan
+              </Button>
+            )}
+            {sub.subscription_status === 'active' && sub.plan !== 'trial' && (
+              <Button variant="outline" onClick={() => window.open('https://whop.com/manage', '_blank')} className="border-border/50">
+                Manage Subscription
+              </Button>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Loading billing info...</p>
+        )}
+      </div>
 
       {/* Account */}
       <div className="glass-card rounded-2xl p-6 space-y-4">
