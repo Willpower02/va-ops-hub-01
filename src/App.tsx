@@ -108,6 +108,7 @@ function AppRoutes() {
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/team" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <TeamPage />} />
         <Route path="/reports" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <ReportsPage />} />
+        <Route path="/journal" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <JournalPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
