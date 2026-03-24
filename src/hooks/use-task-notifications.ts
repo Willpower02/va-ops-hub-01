@@ -7,19 +7,19 @@ function getTaskDueDateTime(task: any): Date | null {
   return new Date(`${task.due_date}T${task.due_time}`);
 }
 
-export function isTaskOverdue(task: any): boolean {
-  if (task.status === 'completed') return false;
-  const dt = getTaskDueDateTime(task);
-  if (!dt) return false;
-  return dt.getTime() < Date.now();
-}
-
-export function isTaskDueSoon(task: any, withinMs = 60 * 60 * 1000): boolean {
+export function isTaskDueNow(task: any): boolean {
   if (task.status === 'completed') return false;
   const dt = getTaskDueDateTime(task);
   if (!dt) return false;
   const diff = dt.getTime() - Date.now();
-  return diff > 0 && diff <= withinMs;
+  return diff <= 0 && diff > -60 * 60 * 1000;
+}
+
+export function isTaskOverdue(task: any): boolean {
+  if (task.status === 'completed') return false;
+  const dt = getTaskDueDateTime(task);
+  if (!dt) return false;
+  return (Date.now() - dt.getTime()) >= 60 * 60 * 1000;
 }
 
 function formatDueTime(task: any): string {
@@ -61,19 +61,20 @@ export function useTaskNotifications(tasks: any[]) {
 
         const diff = dt.getTime() - now;
         const time = formatDueTime(task);
+        const dateLabel = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-        // Overdue
-        if (diff < 0 && !notifiedRef.current.has(task.id)) {
-          notifiedRef.current.add(task.id);
-          toast.error(`🚨 Overdue: ${task.title} was due at ${time}`);
-          sendBrowserNotification(`Overdue: ${task.title}`, `Was due at ${time}`);
+        // Task is due (at or past due time)
+        if (diff <= 0 && !dueSoonNotifiedRef.current.has(task.id)) {
+          dueSoonNotifiedRef.current.add(task.id);
+          toast.warning(`⏰ Task is Due: ${task.title} is due now`);
+          sendBrowserNotification(`Task is Due: ${task.title}`, `This task is due now`);
         }
 
-        // Due within 15 minutes
-        if (diff > 0 && diff <= 15 * 60 * 1000 && !dueSoonNotifiedRef.current.has(task.id)) {
-          dueSoonNotifiedRef.current.add(task.id);
-          toast.warning(`⏰ Task due soon: ${task.title} is due at ${time}`);
-          sendBrowserNotification(`Task due soon: ${task.title}`, `Due at ${time}`);
+        // Overdue (1+ hour past due time)
+        if (diff <= -60 * 60 * 1000 && !notifiedRef.current.has(task.id)) {
+          notifiedRef.current.add(task.id);
+          toast.error(`🚨 Overdue: ${task.title} was due at ${time} on ${dateLabel} and has not been completed`);
+          sendBrowserNotification(`Overdue: ${task.title}`, `Was due at ${time} on ${dateLabel} and has not been completed`);
         }
       }
     };
