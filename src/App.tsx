@@ -22,14 +22,13 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   const { session, profile, orgId, role, loading, authError } = useAuth();
 
-  // Check if we're on /reset-password — this route is ALWAYS public
-  const isResetPasswordRoute = window.location.pathname === '/reset-password';
-  if (isResetPasswordRoute) {
-    return (
-      <Routes>
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-      </Routes>
-    );
+  // Check if we're on public routes — always accessible
+  const pathname = window.location.pathname;
+  if (pathname === '/reset-password') {
+    return <Routes><Route path="/reset-password" element={<ResetPasswordPage />} /></Routes>;
+  }
+  if (pathname === '/accept-invite') {
+    return <Routes><Route path="/accept-invite" element={<AcceptInvitePage />} /></Routes>;
   }
 
   console.log('[Router] state:', {
