@@ -1,0 +1,1 @@
+ALTER TABLE public.timers ADD COLUMN IF NOT EXISTS notes TEXT;

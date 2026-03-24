@@ -232,6 +232,7 @@ export type Database = {
           created_at: string
           duration_seconds: number
           id: string
+          notes: string | null
           started_at: string
           status: string
           stopped_at: string | null
@@ -241,6 +242,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          notes?: string | null
           started_at?: string
           status?: string
           stopped_at?: string | null
@@ -250,6 +252,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          notes?: string | null
           started_at?: string
           status?: string
           stopped_at?: string | null
