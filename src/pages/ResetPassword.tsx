@@ -13,7 +13,7 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.hash.substring(1));
     const token_hash = params.get("token_hash");
     const type = params.get("type");
 
