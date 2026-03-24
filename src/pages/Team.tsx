@@ -58,9 +58,9 @@ export default function TeamPage() {
     return u.status === statusFilter;
   });
 
-  const handleResendInvite = async (email: string) => {
+  const handleResendInvite = async (member: { name: string; email: string; role: string }) => {
     try {
-      await resendInvite.mutateAsync(email);
+      await resendInvite.mutateAsync(member);
       toast.success('Invitation resent successfully');
     } catch (err: any) {
       toast.error(err.message || 'Failed to resend invitation');
@@ -133,7 +133,7 @@ export default function TeamPage() {
                         variant="ghost"
                         size="sm"
                         className="text-xs text-primary hover:text-primary/80 h-7 px-2"
-                        onClick={() => handleResendInvite(u.email)}
+                        onClick={() => handleResendInvite({ name: u.name, email: u.email, role: u.role })}
                         disabled={resendInvite.isPending}
                       >
                         <RotateCw className="h-3 w-3 mr-1" />
