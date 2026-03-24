@@ -17,8 +17,11 @@ export function AddMemberModal({ open, onClose }: Props) {
   const [role, setRole] = useState('va');
   const [error, setError] = useState('');
 
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const { data: members = [] } = useTeamMembers();
   const inviteMember = useInviteTeamMember();
+  const maxVAs = useMaxVAs();
+  const vaCount = members.filter((m: any) => m.role === 'va').length;
 
   const handleSave = async () => {
     if (!name.trim() || !email.trim()) { setError('All fields are required'); return; }
