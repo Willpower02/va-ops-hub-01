@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
+import { CompleteTaskModal } from '@/components/CompleteTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTasks, useVAs, useTimers, useTimerControls, useDeleteTask } from '@/hooks/use-data';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
