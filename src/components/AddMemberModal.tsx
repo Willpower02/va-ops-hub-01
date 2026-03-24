@@ -69,5 +69,7 @@ export function AddMemberModal({ open, onClose }: Props) {
         </div>
       </DialogContent>
     </Dialog>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
+    </>
   );
 }
