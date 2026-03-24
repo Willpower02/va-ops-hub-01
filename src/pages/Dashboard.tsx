@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useVAs, useTimers, useTasks, useTeamMembers } from '@/hooks/use-data';
 import { useIdleDetection } from '@/hooks/use-idle-detection';
 import { Navigate } from 'react-router-dom';
+import { TrialBanner } from '@/components/TrialBanner';
 
 export default function Dashboard() {
   const { can } = useAuth();
