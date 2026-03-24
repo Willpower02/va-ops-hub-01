@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/use-subscription';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 export default function SettingsPage() {
   const { userName, userEmail, role, can, profile, orgId, session } = useAuth();
