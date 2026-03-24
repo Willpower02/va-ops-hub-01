@@ -188,7 +188,8 @@ export function useTimerControls() {
     onSuccess: invalidate,
   });
   const stop = useMutation({
-    mutationFn: (taskId: string) => stopTimerOp(taskId, orgId!, session!.user.id),
+    mutationFn: ({ taskId, notes }: { taskId: string; notes?: string }) =>
+      stopTimerOp(taskId, orgId!, session!.user.id, notes),
     onSuccess: invalidate,
   });
   return { start, pause, stop };
