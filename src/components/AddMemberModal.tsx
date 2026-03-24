@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useInviteTeamMember, useTeamMembers } from '@/hooks/use-data';
+import { useMaxVAs } from '@/hooks/use-subscription';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import { toast } from 'sonner';
 
 interface Props { open: boolean; onClose: () => void; }
