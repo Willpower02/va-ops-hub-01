@@ -175,7 +175,7 @@ export default function TasksPage() {
             })()}
             <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
               <span>{va ? va.name : 'Unassigned'}</span>
-              {task.due_date && <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>}
+              {task.due_date && <span>Due: {formatTaskDueLabel(task)}</span>}
             </div>
           </div>
 
