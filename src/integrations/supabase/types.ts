@@ -84,21 +84,36 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          current_period_end: string | null
           id: string
           name: string
           owner_user_id: string
+          plan: string | null
+          subscription_status: string | null
+          trial_ends_at: string | null
+          whop_membership_id: string | null
         }
         Insert: {
           created_at?: string
+          current_period_end?: string | null
           id?: string
           name: string
           owner_user_id: string
+          plan?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
+          whop_membership_id?: string | null
         }
         Update: {
           created_at?: string
+          current_period_end?: string | null
           id?: string
           name?: string
           owner_user_id?: string
+          plan?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
+          whop_membership_id?: string | null
         }
         Relationships: []
       }
