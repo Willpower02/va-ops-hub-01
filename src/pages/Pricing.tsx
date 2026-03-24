@@ -2,13 +2,13 @@ import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
-const STARTER_CHECKOUT_URL = 'STARTER_CHECKOUT_URL';
-const PRO_CHECKOUT_URL = 'PRO_CHECKOUT_URL';
+const STARTER_CHECKOUT_URL = 'https://whop.com/va-tracker/starter-88';
+const PRO_CHECKOUT_URL = 'https://whop.com/va-tracker/pro-e1-9109';
 
 const plans = [
   {
     name: 'Starter',
-    price: 12,
+    price: 15,
     popular: false,
     checkoutUrl: STARTER_CHECKOUT_URL,
     features: [
@@ -19,7 +19,7 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: 49,
+    price: 45,
     popular: true,
     checkoutUrl: PRO_CHECKOUT_URL,
     features: [
