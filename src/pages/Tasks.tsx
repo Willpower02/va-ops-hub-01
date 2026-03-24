@@ -23,7 +23,7 @@ import { getElapsedSeconds, formatTime } from '@/lib/store';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { TASK_CATEGORIES, CATEGORY_COLORS } from '@/lib/constants';
-import { isTaskOverdue, isTaskDueSoon, formatTaskDueLabel, useTaskNotifications } from '@/hooks/use-task-notifications';
+import { isTaskOverdue, isTaskDueNow, formatTaskDueLabel, useTaskNotifications } from '@/hooks/use-task-notifications';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
