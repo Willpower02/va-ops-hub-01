@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pause, Play, Trash2, Square, Loader2 } from 'lucide-react';
+import { Plus, Pause, Play, Trash2, Square, Loader2, MessageSquare } from 'lucide-react';
+import { TaskComments } from '@/components/TaskComments';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
