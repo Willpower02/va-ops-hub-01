@@ -146,6 +146,12 @@ export default function TasksPage() {
               {task.priority}
             </span>
           </div>
+          {(() => {
+            const stoppedTimer = timers.find((t: any) => t.task_id === task.id && t.status === 'stopped' && t.notes);
+            return stoppedTimer ? (
+              <p className="text-xs text-muted-foreground mt-1 italic">{stoppedTimer.notes}</p>
+            ) : null;
+          })()}
           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
             <span>{va ? va.name : 'Unassigned'}</span>
             {task.due_date && <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>}
