@@ -24,6 +24,10 @@ export function AddMemberModal({ open, onClose }: Props) {
   const vaCount = members.filter((m: any) => m.role === 'va').length;
 
   const handleSave = async () => {
+    if (role === 'va' && maxVAs !== null && vaCount >= maxVAs) {
+      setShowUpgrade(true);
+      return;
+    }
     if (!name.trim() || !email.trim()) { setError('All fields are required'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Invalid email format'); return; }
     if (members.some((u: any) => u.email === email)) { setError('Email already exists'); return; }
