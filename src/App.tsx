@@ -15,20 +15,20 @@ import ReportsPage from "./pages/Reports";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPassword";
+import AcceptInvitePage from "./pages/AcceptInvite";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { session, profile, orgId, role, loading, authError } = useAuth();
 
-  // Check if we're on /reset-password — this route is ALWAYS public
-  const isResetPasswordRoute = window.location.pathname === '/reset-password';
-  if (isResetPasswordRoute) {
-    return (
-      <Routes>
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-      </Routes>
-    );
+  // Check if we're on public routes — always accessible
+  const pathname = window.location.pathname;
+  if (pathname === '/reset-password') {
+    return <Routes><Route path="/reset-password" element={<ResetPasswordPage />} /></Routes>;
+  }
+  if (pathname === '/accept-invite') {
+    return <Routes><Route path="/accept-invite" element={<AcceptInvitePage />} /></Routes>;
   }
 
   console.log('[Router] state:', {
@@ -80,8 +80,17 @@ function AppRoutes() {
     );
   }
 
-  // 4. Logged in but no org → create org page (do NOT redirect to auth!)
+  // 4. Logged in but no org → check if they have a pending invite
   if (!orgId) {
+    const meta = session.user.user_metadata;
+    if (meta?.org_id && meta?.team_member_id) {
+      console.log('[Router] → /accept-invite | reason: user has pending invite');
+      return (
+        <Routes>
+          <Route path="*" element={<AcceptInvitePage />} />
+        </Routes>
+      );
+    }
     console.log('[Router] → /create-organization | reason: user has no organization');
     return <CreateOrgPage />;
   }

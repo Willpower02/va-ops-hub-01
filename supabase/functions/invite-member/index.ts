@@ -22,80 +22,65 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    console.log("[invite-member] Verifying user...");
-
+    // Verify the calling user
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user }, error: userError } = await userClient.auth.getUser();
     if (userError || !user) {
-      console.log("[invite-member] Auth failed:", userError?.message);
-      return json({ error: "Unauthorized: " + (userError?.message || "no user") }, 401);
+      return json({ error: "Unauthorized" }, 401);
     }
-
-    console.log("[invite-member] User verified:", user.id);
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: roleData, error: roleError } = await adminClient.rpc("get_user_org_role", { _user_id: user.id });
-    if (roleError) {
-      console.log("[invite-member] Role check error:", roleError.message);
-      return json({ error: "Failed to check role: " + roleError.message }, 500);
-    }
+    // Check caller is admin
+    const { data: roleData } = await adminClient.rpc("get_user_org_role", { _user_id: user.id });
     if (roleData !== "admin") {
       return json({ error: "Only admins can invite members" }, 403);
     }
 
-    const { data: orgData, error: orgError } = await adminClient.rpc("get_user_org_id", { _user_id: user.id });
-    if (orgError) {
-      console.log("[invite-member] Org check error:", orgError.message);
-      return json({ error: "Failed to get organization: " + orgError.message }, 500);
-    }
+    // Get caller's org
+    const { data: orgData } = await adminClient.rpc("get_user_org_id", { _user_id: user.id });
     if (!orgData) {
-      return json({ error: "No organization found for this user" }, 400);
+      return json({ error: "No organization found" }, 400);
     }
-
-    console.log("[invite-member] Org:", orgData, "Role:", roleData);
 
     const { name, email, role } = await req.json();
 
     if (!name?.trim()) return json({ error: "Name is required" }, 400);
     if (!email?.trim()) return json({ error: "Email is required" }, 400);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Invalid email format" }, 400);
+
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Check for duplicate
     const { data: existing } = await adminClient
       .from("team_members")
-      .select("id, invite_status")
+      .select("id")
       .eq("organization_id", orgData)
-      .eq("email", email.trim().toLowerCase())
+      .eq("email", normalizedEmail)
       .maybeSingle();
 
     if (existing) {
       return json({ error: "A team member with this email already exists" }, 409);
     }
 
-    console.log("[invite-member] Inviting:", email, "role:", role || "va");
+    // Get org name for the invite email
+    const { data: orgInfo } = await adminClient
+      .from("organizations")
+      .select("name")
+      .eq("id", orgData)
+      .single();
 
-    // Send invite via Auth
-    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-      data: { name, organization_id: orgData, team_role: role || "va" },
-    });
+    const orgName = orgInfo?.name || "the organization";
+    const roleName = role === "team_lead" ? "Team Lead" : role === "admin" ? "Admin" : "Virtual Assistant";
 
-    if (inviteError) {
-      console.log("[invite-member] Invite error:", inviteError.message);
-      if (!inviteError.message?.includes("already been registered")) {
-        return json({ error: "Auth invite failed: " + inviteError.message }, 400);
-      }
-    }
-
-    // Create team member record
+    // Insert team member first
     const { data: member, error: memberError } = await adminClient
       .from("team_members")
       .insert({
         organization_id: orgData,
         name: name.trim(),
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         role: role || "va",
         status: "offline",
         invite_status: "pending",
@@ -104,17 +89,36 @@ Deno.serve(async (req) => {
       .single();
 
     if (memberError) {
-      console.log("[invite-member] Insert error:", memberError.message);
+      console.error("[invite-member] Insert error:", memberError.message);
       return json({ error: "Failed to create team member: " + memberError.message }, 500);
     }
 
-    console.log("[invite-member] Member created:", member.id);
+    // Send invite via Supabase Auth admin API
+    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(normalizedEmail, {
+      data: {
+        org_id: orgData,
+        role: role || "va",
+        team_member_id: member.id,
+        invited_name: name.trim(),
+      },
+      redirectTo: "https://vatracker.lovable.app/accept-invite",
+    });
 
+    if (inviteError) {
+      console.error("[invite-member] Invite error:", inviteError.message);
+      // Don't fail — the team member record is created, they can be re-invited
+      if (!inviteError.message?.includes("already been registered")) {
+        // Still return success since the member was created
+        console.warn("[invite-member] Auth invite failed but member created");
+      }
+    }
+
+    // Log activity
     await adminClient.from("activity_logs").insert({
       organization_id: orgData,
       user_id: user.id,
       action: "member_invited",
-      details: { name, email },
+      details: { name: name.trim(), email: normalizedEmail, role: role || "va" },
     });
 
     return json({ member });
