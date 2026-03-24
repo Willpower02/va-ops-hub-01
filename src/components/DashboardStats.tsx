@@ -61,6 +61,16 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       link: '/reports?view=today',
     },
     {
+      label: 'Overdue Tasks',
+      value: overdueTasks,
+      sub: overdueTasks > 0 ? 'need attention' : 'all on track',
+      icon: AlertOctagon,
+      color: overdueTasks > 0 ? 'text-destructive' : 'text-muted-foreground',
+      bg: overdueTasks > 0 ? 'bg-destructive/10' : 'bg-muted',
+      glowClass: '',
+      link: '/tasks',
+    },
+    {
       label: 'Idle Members',
       value: idleVAs,
       sub: idleVAs > 0 ? 'available for tasks' : 'everyone is busy',
