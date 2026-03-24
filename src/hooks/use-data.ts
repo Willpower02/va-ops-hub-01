@@ -133,9 +133,9 @@ export function useInviteTeamMember() {
 
 export function useResendInvite() {
   return useMutation({
-    mutationFn: async (email: string) => {
-      const { data, error } = await supabase.functions.invoke('resend-invite', {
-        body: { email },
+    mutationFn: async (member: { name: string; email: string; role: string }) => {
+      const { data, error } = await supabase.functions.invoke('invite-member', {
+        body: { name: member.name, email: member.email, role: member.role },
       });
       if (error) throw new Error(error.message || 'Failed to resend invitation');
       if (data?.error) throw new Error(data.error);
