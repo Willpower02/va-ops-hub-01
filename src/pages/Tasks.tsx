@@ -34,6 +34,7 @@ const normalizeTaskStatus = (status: string) => (status === 'running' ? 'active'
 export default function TasksPage() {
   const { can } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [vaFilter, setVaFilter] = useState('all');
   const [, setTick] = useState(0);
