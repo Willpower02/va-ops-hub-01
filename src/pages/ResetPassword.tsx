@@ -1,7 +1,7 @@
 // reset-fix-v3
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
