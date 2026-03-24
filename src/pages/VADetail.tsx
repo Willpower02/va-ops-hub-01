@@ -121,6 +121,9 @@ export default function VADetail() {
             </div>
             {expandedTaskId === task.id && <TaskComments taskId={task.id} />}
           </div>
+        );
+      })}
+    </div>
   );
 
   return (
