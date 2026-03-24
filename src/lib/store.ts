@@ -236,7 +236,7 @@ export const pauseTimerOp = async (taskId: string, orgId: string, userId: string
   await logActivity({ user_id: userId, action: 'timer_paused', details: { task_id: taskId }, organization_id: orgId });
 };
 
-export const stopTimerOp = async (taskId: string, orgId: string, userId: string) => {
+export const stopTimerOp = async (taskId: string, orgId: string, userId: string, notes?: string) => {
   const openTimers = await fetchOpenTimersForTask(taskId);
 
   if (openTimers.length === 0) {
@@ -259,6 +259,7 @@ export const stopTimerOp = async (taskId: string, orgId: string, userId: string)
         status: 'stopped',
         stopped_at: now,
         duration_seconds: entry.totalSec,
+        ...(notes ? { notes } : {}),
       })
     )
   );
@@ -269,7 +270,7 @@ export const stopTimerOp = async (taskId: string, orgId: string, userId: string)
   const { data: task, error: taskError } = await supabase.from('tasks').select('assigned_team_member_id').eq('id', taskId).single();
   if (taskError) throw taskError;
   if (task?.assigned_team_member_id) await updateTeamMember(task.assigned_team_member_id, { status: 'idle' });
-  await logActivity({ user_id: userId, action: 'timer_stopped', details: { task_id: taskId, duration_seconds: totalDuration }, organization_id: orgId });
+  await logActivity({ user_id: userId, action: 'timer_stopped', details: { task_id: taskId, duration_seconds: totalDuration, ...(notes ? { notes } : {}) }, organization_id: orgId });
 };
 
 // ---- Helpers ----
