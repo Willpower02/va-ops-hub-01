@@ -19,6 +19,7 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
   const [priority, setPriority] = useState('medium');
   const [category, setCategory] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('');
   const [startImmediately, setStartImmediately] = useState(false);
   const [error, setError] = useState('');
 
