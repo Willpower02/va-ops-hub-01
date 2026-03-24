@@ -202,6 +202,7 @@ export default function TeamPage() {
       </div>
 
       <AddMemberModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
