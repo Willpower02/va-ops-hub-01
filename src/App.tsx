@@ -12,6 +12,7 @@ import VADetail from "./pages/VADetail";
 import TasksPage from "./pages/Tasks";
 import TeamPage from "./pages/Team";
 import ReportsPage from "./pages/Reports";
+import JournalPage from "./pages/Journal";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPassword";
@@ -107,6 +108,7 @@ function AppRoutes() {
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/team" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <TeamPage />} />
         <Route path="/reports" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <ReportsPage />} />
+        <Route path="/journal" element={role === 'va' ? <Navigate to={homeRoute} replace /> : <JournalPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

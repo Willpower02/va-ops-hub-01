@@ -28,6 +28,7 @@ export const ROLE_PERMISSIONS = {
     viewTeam: true,
     viewDashboard: true,
     addComments: true,
+    viewJournal: true,
   },
   team_lead: {
     manageOrg: false,
@@ -42,6 +43,7 @@ export const ROLE_PERMISSIONS = {
     viewTeam: true,
     viewDashboard: true,
     addComments: true,
+    viewJournal: true,
   },
   va: {
     manageOrg: false,
@@ -56,5 +58,6 @@ export const ROLE_PERMISSIONS = {
     viewTeam: false,
     viewDashboard: false,
     addComments: true,
+    viewJournal: false,
   },
 } as const;

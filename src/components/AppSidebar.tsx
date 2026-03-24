@@ -1,4 +1,4 @@
-import { LayoutDashboard, ListTodo, Users, BarChart3, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Users, BarChart3, Settings, LogOut, BookOpen } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -12,6 +12,7 @@ const allNavItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard, permission: 'viewDashboard' as const },
   { title: 'Tasks', url: '/tasks', icon: ListTodo, permission: null },
   { title: 'Team', url: '/team', icon: Users, permission: 'viewTeam' as const },
+  { title: 'Journal', url: '/journal', icon: BookOpen, permission: 'viewJournal' as const },
   { title: 'Reports', url: '/reports', icon: BarChart3, permission: 'viewAnalytics' as const },
   { title: 'Settings', url: '/settings', icon: Settings, permission: 'manageOrg' as const },
 ];
