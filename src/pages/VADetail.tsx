@@ -82,6 +82,9 @@ export default function VADetail() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-medium text-card-foreground">{task.title}</h4>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>{task.priority}</span>
+                  {task.category && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[task.category] || CATEGORY_COLORS['Other']}`}>{task.category}</span>
+                  )}
                 </div>
                 {task.description && <p className="text-sm text-muted-foreground mt-1">{task.description}</p>}
                 {(() => {

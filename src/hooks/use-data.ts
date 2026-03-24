@@ -148,7 +148,7 @@ export function useAddTask() {
   const qc = useQueryClient();
   const { orgId, session } = useAuth();
   return useMutation({
-    mutationFn: async (task: { title: string; description: string; assigned_team_member_id: string; priority: string; status: string; due_date?: string; startTimer?: boolean }) => {
+    mutationFn: async (task: { title: string; description: string; assigned_team_member_id: string; priority: string; status: string; due_date?: string; category?: string; startTimer?: boolean }) => {
       const { startTimer: shouldStart, ...taskData } = task;
       const result = await addTask({ ...taskData, organization_id: orgId! });
       await logActivity({ user_id: session!.user.id, action: 'task_created', details: { title: task.title }, organization_id: orgId! });
