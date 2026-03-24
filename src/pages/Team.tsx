@@ -99,10 +99,33 @@ export default function TeamPage() {
 
   return (
     <div>
+      {/* Plan info bar */}
+      {sub && (
+        <div className="glass-card rounded-xl px-4 py-3 mb-5 flex items-center gap-3 flex-wrap">
+          <Users className="h-4 w-4 text-primary shrink-0" />
+          {sub.plan === 'pro' ? (
+            <span className="text-sm text-foreground font-medium">Pro Plan: Unlimited VAs</span>
+          ) : sub.plan === 'trial' ? (
+            <>
+              <span className="text-sm text-foreground font-medium">Trial: {vaCount}/{maxVAs ?? 3} VAs used</span>
+              {trialDaysLeft !== null && (
+                <Badge className="bg-warning/10 text-warning border-0 text-xs">{trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''} left</Badge>
+              )}
+              <Progress value={(vaCount / (maxVAs ?? 3)) * 100} className="w-24 h-2" />
+            </>
+          ) : (
+            <>
+              <span className="text-sm text-foreground font-medium">Starter Plan: {vaCount}/{maxVAs ?? 3} VAs used</span>
+              <Progress value={(vaCount / (maxVAs ?? 3)) * 100} className="w-24 h-2" />
+            </>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-foreground">Team</h1>
         {can('addMembers') && (
-          <Button onClick={() => setAddOpen(true)} className="bg-primary hover:bg-primary/90 glow-border"><Plus className="h-4 w-4 mr-1" /> Invite Team Member</Button>
+          <Button onClick={handleInviteClick} className="bg-primary hover:bg-primary/90 glow-border"><Plus className="h-4 w-4 mr-1" /> Invite Team Member</Button>
         )}
       </div>
 
