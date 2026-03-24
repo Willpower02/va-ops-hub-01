@@ -52,6 +52,8 @@ export default function TasksPage() {
   const timerControls = useTimerControls();
   const deleteTaskMutation = useDeleteTask();
 
+  useTaskNotifications(allTasks);
+
   const statusParam = searchParams.get('status');
   const defaultTab = statusParam === 'running' ? 'active' : 'pending';
 
