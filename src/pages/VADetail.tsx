@@ -144,6 +144,12 @@ export default function VADetail() {
         <TabsContent value="paused" className="mt-4">{renderTaskList(pausedTasks, true)}</TabsContent>
         <TabsContent value="completed" className="mt-4">{renderTaskList(completedTasks, false)}</TabsContent>
       </Tabs>
+      <CompleteTaskModal
+        open={!!stopTarget}
+        onClose={() => setStopTarget(null)}
+        onConfirm={confirmStop}
+        loading={stopLoading}
+      />
     </div>
   );
 }
