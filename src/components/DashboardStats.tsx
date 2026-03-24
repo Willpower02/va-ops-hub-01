@@ -1,6 +1,7 @@
-import { Users, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Users, Clock, CheckCircle, AlertTriangle, AlertOctagon } from 'lucide-react';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
 import { useNavigate } from 'react-router-dom';
+import { isTaskOverdue } from '@/hooks/use-task-notifications';
 
 interface DashboardStatsProps {
   vas: any[];
@@ -20,6 +21,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
     if (t.status !== 'completed') return false;
     return new Date(t.created_at).toDateString() === new Date().toDateString();
   }).length;
+  const overdueTasks = tasks.filter((t: any) => isTaskOverdue(t)).length;
 
   const todayStr = new Date().toDateString();
   const totalTrackedToday = timers
@@ -59,6 +61,16 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
       link: '/reports?view=today',
     },
     {
+      label: 'Overdue Tasks',
+      value: overdueTasks,
+      sub: overdueTasks > 0 ? 'need attention' : 'all on track',
+      icon: AlertOctagon,
+      color: overdueTasks > 0 ? 'text-destructive' : 'text-muted-foreground',
+      bg: overdueTasks > 0 ? 'bg-destructive/10' : 'bg-muted',
+      glowClass: '',
+      link: '/tasks',
+    },
+    {
       label: 'Idle Members',
       value: idleVAs,
       sub: idleVAs > 0 ? 'available for tasks' : 'everyone is busy',
@@ -71,7 +83,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
       {stats.map((stat) => (
         <button
           key={stat.label}

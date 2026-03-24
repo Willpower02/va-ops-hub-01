@@ -19,6 +19,7 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
   const [priority, setPriority] = useState('medium');
   const [category, setCategory] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('');
   const [startImmediately, setStartImmediately] = useState(false);
   const [error, setError] = useState('');
 
@@ -36,11 +37,12 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
         priority,
         status: startImmediately ? 'active' : 'pending',
         due_date: dueDate || undefined,
+        due_time: dueTime || undefined,
         category: category || undefined,
         startTimer: startImmediately,
       });
       setTitle(''); setDescription(''); setVaId(preselectedVaId || ''); setPriority('medium');
-      setCategory(''); setDueDate(''); setStartImmediately(false); setError('');
+      setCategory(''); setDueDate(''); setDueTime(''); setStartImmediately(false); setError('');
       toast.success('Task created!');
       onClose();
     } catch (err: any) {
@@ -88,7 +90,10 @@ export function CreateTaskModal({ open, onClose, preselectedVaId }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <div><Label className="text-muted-foreground">Due Date</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="bg-secondary/50 border-border/50" /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label className="text-muted-foreground">Due Date</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="bg-secondary/50 border-border/50" /></div>
+            <div><Label className="text-muted-foreground">Due Time (optional)</Label><Input type="time" value={dueTime} onChange={e => setDueTime(e.target.value)} className="bg-secondary/50 border-border/50" /></div>
+          </div>
           <div className="flex items-center gap-2">
             <Checkbox id="startTimer" checked={startImmediately} onCheckedChange={(c) => setStartImmediately(c === true)} />
             <Label htmlFor="startTimer" className="cursor-pointer text-muted-foreground">Start timer immediately</Label>

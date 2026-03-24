@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Pause, Play, Trash2, Square, Loader2, MessageSquare } from 'lucide-react';
 import { TaskComments } from '@/components/TaskComments';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -22,6 +23,7 @@ import { getElapsedSeconds, formatTime } from '@/lib/store';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { TASK_CATEGORIES, CATEGORY_COLORS } from '@/lib/constants';
+import { isTaskOverdue, isTaskDueSoon, formatTaskDueLabel, useTaskNotifications } from '@/hooks/use-task-notifications';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
@@ -49,6 +51,8 @@ export default function TasksPage() {
   const { data: timers = [] } = useTimers();
   const timerControls = useTimerControls();
   const deleteTaskMutation = useDeleteTask();
+
+  useTaskNotifications(allTasks);
 
   const statusParam = searchParams.get('status');
   const defaultTab = statusParam === 'running' ? 'active' : 'pending';
@@ -151,10 +155,16 @@ export default function TasksPage() {
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>
                 {task.priority}
               </span>
-              {task.category && (
+               {task.category && (
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[task.category] || CATEGORY_COLORS['Other']}`}>
                   {task.category}
                 </span>
+              )}
+              {isTaskOverdue(task) && (
+                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>
+              )}
+              {!isTaskOverdue(task) && isTaskDueSoon(task) && (
+                <Badge className="bg-warning/20 text-warning border-warning/30 text-[10px] px-1.5 py-0">Due Soon</Badge>
               )}
             </div>
             {(() => {
@@ -165,7 +175,7 @@ export default function TasksPage() {
             })()}
             <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
               <span>{va ? va.name : 'Unassigned'}</span>
-              {task.due_date && <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>}
+              {task.due_date && <span>Due: {formatTaskDueLabel(task)}</span>}
             </div>
           </div>
 

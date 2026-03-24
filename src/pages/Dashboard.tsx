@@ -12,6 +12,7 @@ import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useVAs, useTimers, useTasks, useTeamMembers } from '@/hooks/use-data';
 import { useIdleDetection } from '@/hooks/use-idle-detection';
+import { useTaskNotifications } from '@/hooks/use-task-notifications';
 import { Navigate } from 'react-router-dom';
 import { TrialBanner } from '@/components/TrialBanner';
 
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const { data: tasks = [] } = useTasks();
 
   useIdleDetection();
+  useTaskNotifications(tasks);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
