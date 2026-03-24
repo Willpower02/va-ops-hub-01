@@ -80,8 +80,17 @@ function AppRoutes() {
     );
   }
 
-  // 4. Logged in but no org → create org page (do NOT redirect to auth!)
+  // 4. Logged in but no org → check if they have a pending invite
   if (!orgId) {
+    const meta = session.user.user_metadata;
+    if (meta?.org_id && meta?.team_member_id) {
+      console.log('[Router] → /accept-invite | reason: user has pending invite');
+      return (
+        <Routes>
+          <Route path="*" element={<AcceptInvitePage />} />
+        </Routes>
+      );
+    }
     console.log('[Router] → /create-organization | reason: user has no organization');
     return <CreateOrgPage />;
   }
