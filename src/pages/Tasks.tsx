@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
+import { CompleteTaskModal } from '@/components/CompleteTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTasks, useVAs, useTimers, useTimerControls, useDeleteTask } from '@/hooks/use-data';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
@@ -38,7 +39,7 @@ export default function TasksPage() {
   const [searchParams] = useSearchParams();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
-
+  const [stopTarget, setStopTarget] = useState<{ id: string } | null>(null);
   const { data: allTasks = [] } = useTasks();
   const { data: vas = [] } = useVAs();
   const { data: timers = [] } = useTimers();
@@ -85,15 +86,22 @@ export default function TasksPage() {
     }
   };
 
-  const handleStop = async (task: any) => {
-    setLoading(task.id, true);
+  const handleStop = (task: any) => {
+    setStopTarget({ id: task.id });
+  };
+
+  const confirmStop = async (notes: string) => {
+    if (!stopTarget) return;
+    const taskId = stopTarget.id;
+    setLoading(taskId, true);
     try {
-      await timerControls.stop.mutateAsync(task.id);
+      await timerControls.stop.mutateAsync({ taskId, notes: notes || undefined });
       toast.success('Task completed');
     } catch (err: any) {
       toast.error(err.message || 'Failed to stop task');
     } finally {
-      setLoading(task.id, false);
+      setLoading(taskId, false);
+      setStopTarget(null);
     }
   };
 
@@ -138,6 +146,12 @@ export default function TasksPage() {
               {task.priority}
             </span>
           </div>
+          {(() => {
+            const stoppedTimer = timers.find((t: any) => t.task_id === task.id && t.status === 'stopped' && t.notes);
+            return stoppedTimer ? (
+              <p className="text-xs text-muted-foreground mt-1 italic">{stoppedTimer.notes}</p>
+            ) : null;
+          })()}
           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
             <span>{va ? va.name : 'Unassigned'}</span>
             {task.due_date && <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>}
@@ -257,6 +271,13 @@ export default function TasksPage() {
       </Tabs>
 
       <CreateTaskModal open={createOpen} onClose={() => setCreateOpen(false)} />
+
+      <CompleteTaskModal
+        open={!!stopTarget}
+        onClose={() => setStopTarget(null)}
+        onConfirm={confirmStop}
+        loading={stopTarget ? actionLoading[stopTarget.id] : false}
+      />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>

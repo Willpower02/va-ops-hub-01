@@ -4,9 +4,11 @@ import { ArrowLeft, Play, Pause, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CompleteTaskModal } from '@/components/CompleteTaskModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMember, useTasks, useTimers, useTimerControls } from '@/hooks/use-data';
 import { getElapsedSeconds, formatTime } from '@/lib/store';
+import { toast } from 'sonner';
 
 const PRIORITY_CLASSES: Record<string, string> = {
   low: 'badge-priority-low',
@@ -20,6 +22,8 @@ export default function VADetail() {
   const navigate = useNavigate();
   const { can } = useAuth();
   const [tick, setTick] = useState(0);
+  const [stopTarget, setStopTarget] = useState<string | null>(null);
+  const [stopLoading, setStopLoading] = useState(false);
 
   const { data: va } = useTeamMember(id);
   const { data: allTasks = [] } = useTasks();
@@ -30,6 +34,20 @@ export default function VADetail() {
     const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const confirmStop = async (notes: string) => {
+    if (!stopTarget) return;
+    setStopLoading(true);
+    try {
+      await timerControls.stop.mutateAsync({ taskId: stopTarget, notes: notes || undefined });
+      toast.success('Task completed');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to stop task');
+    } finally {
+      setStopLoading(false);
+      setStopTarget(null);
+    }
+  };
 
   if (!va) return <div className="p-8 text-center text-muted-foreground">VA not found</div>;
 
@@ -63,6 +81,10 @@ export default function VADetail() {
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[task.priority]}`}>{task.priority}</span>
                 </div>
                 {task.description && <p className="text-sm text-muted-foreground mt-1">{task.description}</p>}
+                {(() => {
+                  const stoppedTimer = timers.find((t: any) => t.task_id === task.id && t.status === 'stopped' && t.notes);
+                  return stoppedTimer ? <p className="text-xs text-muted-foreground mt-1 italic">{stoppedTimer.notes}</p> : null;
+                })()}
                 {task.due_date && <p className="text-xs text-muted-foreground mt-1">Due: {new Date(task.due_date).toLocaleDateString()}</p>}
               </div>
               {showTimer && (
@@ -81,7 +103,7 @@ export default function VADetail() {
                         </Button>
                       )}
                       {timer && timer.status !== 'stopped' && (
-                        <Button size="sm" variant="outline" onClick={() => timerControls.stop.mutate(task.id)}>
+                        <Button size="sm" variant="outline" onClick={() => setStopTarget(task.id)}>
                           <Square className="h-3 w-3" />
                         </Button>
                       )}
@@ -122,6 +144,12 @@ export default function VADetail() {
         <TabsContent value="paused" className="mt-4">{renderTaskList(pausedTasks, true)}</TabsContent>
         <TabsContent value="completed" className="mt-4">{renderTaskList(completedTasks, false)}</TabsContent>
       </Tabs>
+      <CompleteTaskModal
+        open={!!stopTarget}
+        onClose={() => setStopTarget(null)}
+        onConfirm={confirmStop}
+        loading={stopLoading}
+      />
     </div>
   );
 }
