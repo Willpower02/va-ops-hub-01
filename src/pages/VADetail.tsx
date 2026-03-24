@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, Square } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Square, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TaskComments } from '@/components/TaskComments';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CompleteTaskModal } from '@/components/CompleteTaskModal';
