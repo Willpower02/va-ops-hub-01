@@ -12,6 +12,7 @@ import VADetail from "./pages/VADetail";
 import TasksPage from "./pages/Tasks";
 import TeamPage from "./pages/Team";
 import ReportsPage from "./pages/Reports";
+import JournalPage from "./pages/Journal";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPassword";
