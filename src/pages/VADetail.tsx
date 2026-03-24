@@ -22,6 +22,8 @@ export default function VADetail() {
   const navigate = useNavigate();
   const { can } = useAuth();
   const [tick, setTick] = useState(0);
+  const [stopTarget, setStopTarget] = useState<string | null>(null);
+  const [stopLoading, setStopLoading] = useState(false);
 
   const { data: va } = useTeamMember(id);
   const { data: allTasks = [] } = useTasks();
