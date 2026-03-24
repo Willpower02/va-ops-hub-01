@@ -1,6 +1,6 @@
-import { Check } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const STARTER_CHECKOUT_URL = 'https://whop.com/va-tracker/starter-88';
 const PRO_CHECKOUT_URL = 'https://whop.com/va-tracker/pro-e1-9109';
