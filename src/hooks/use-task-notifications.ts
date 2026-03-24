@@ -7,19 +7,19 @@ function getTaskDueDateTime(task: any): Date | null {
   return new Date(`${task.due_date}T${task.due_time}`);
 }
 
-export function isTaskOverdue(task: any): boolean {
-  if (task.status === 'completed') return false;
-  const dt = getTaskDueDateTime(task);
-  if (!dt) return false;
-  return dt.getTime() < Date.now();
-}
-
-export function isTaskDueSoon(task: any, withinMs = 60 * 60 * 1000): boolean {
+export function isTaskDueNow(task: any): boolean {
   if (task.status === 'completed') return false;
   const dt = getTaskDueDateTime(task);
   if (!dt) return false;
   const diff = dt.getTime() - Date.now();
-  return diff > 0 && diff <= withinMs;
+  return diff <= 0 && diff > -60 * 60 * 1000;
+}
+
+export function isTaskOverdue(task: any): boolean {
+  if (task.status === 'completed') return false;
+  const dt = getTaskDueDateTime(task);
+  if (!dt) return false;
+  return (Date.now() - dt.getTime()) >= 60 * 60 * 1000;
 }
 
 function formatDueTime(task: any): string {
