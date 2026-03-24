@@ -21,6 +21,7 @@ export function DashboardStats({ vas, tasks, timers }: DashboardStatsProps) {
     if (t.status !== 'completed') return false;
     return new Date(t.created_at).toDateString() === new Date().toDateString();
   }).length;
+  const overdueTasks = tasks.filter((t: any) => isTaskOverdue(t)).length;
 
   const todayStr = new Date().toDateString();
   const totalTrackedToday = timers
