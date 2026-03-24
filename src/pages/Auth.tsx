@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -55,7 +55,7 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: 'https://vatrackr.com/reset-password',
       });
       if (error) throw error;
       toast.success('Password reset link sent! Check your email.');
