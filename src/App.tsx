@@ -32,6 +32,9 @@ function AppRoutes() {
   if (pathname === '/accept-invite') {
     return <Routes><Route path="/accept-invite" element={<AcceptInvitePage />} /></Routes>;
   }
+  if (pathname === '/pricing') {
+    return <Routes><Route path="/pricing" element={<PricingPage />} /></Routes>;
+  }
 
   console.log('[Router] state:', {
     hasSession: !!session,

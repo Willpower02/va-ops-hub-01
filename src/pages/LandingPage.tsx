@@ -133,6 +133,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
                 size="lg"
                 variant="outline"
                 className="border-border/50 text-foreground hover:bg-secondary hover:border-border font-semibold px-8 h-12 text-base transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => window.location.href = '/pricing'}
               >
                 See Pricing
               </Button>

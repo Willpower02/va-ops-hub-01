@@ -42,6 +42,7 @@ export function AddMemberModal({ open, onClose }: Props) {
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md glass-card border-border/30">
         <DialogHeader><DialogTitle className="text-foreground">Invite Team Member</DialogTitle></DialogHeader>
