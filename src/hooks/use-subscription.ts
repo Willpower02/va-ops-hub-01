@@ -37,6 +37,6 @@ export function useTrialDaysLeft(): number | null {
 export function useMaxVAs(): number | null {
   const { data } = useSubscription();
   if (!data) return null;
-  if (data.plan === 'starter') return 3;
-  return null; // unlimited for pro/trial
+  if (data.plan === 'starter' || data.plan === 'trial') return 3;
+  return null; // unlimited for pro
 }

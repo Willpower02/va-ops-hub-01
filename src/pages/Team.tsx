@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Plus, RotateCw, Trash2, Loader2 } from 'lucide-react';
+import { Plus, RotateCw, Trash2, Loader2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,8 +14,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { AddMemberModal } from '@/components/AddMemberModal';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembers, useResendInvite, useDeleteTeamMember } from '@/hooks/use-data';
+import { useSubscription, useMaxVAs, useTrialDaysLeft } from '@/hooks/use-subscription';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -29,13 +32,26 @@ const STATUS_OPTIONS = ['all', 'active', 'idle', 'offline', 'pending'] as const;
 export default function TeamPage() {
   const { can } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const { data: users = [] } = useTeamMembers();
+  const { data: sub } = useSubscription();
+  const maxVAs = useMaxVAs();
+  const trialDaysLeft = useTrialDaysLeft();
+  const vaCount = users.filter((u: any) => u.role === 'va').length;
   const [searchParams, setSearchParams] = useSearchParams();
   const statusFilter = searchParams.get('status') || 'all';
   const resendInvite = useResendInvite();
   const deleteTeamMember = useDeleteTeamMember();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleInviteClick = () => {
+    if (maxVAs !== null && vaCount >= maxVAs) {
+      setUpgradeOpen(true);
+    } else {
+      setAddOpen(true);
+    }
+  };
 
   if (!can('viewTeam')) {
     return <Navigate to="/tasks" replace />;
@@ -83,10 +99,33 @@ export default function TeamPage() {
 
   return (
     <div>
+      {/* Plan info bar */}
+      {sub && (
+        <div className="glass-card rounded-xl px-4 py-3 mb-5 flex items-center gap-3 flex-wrap">
+          <Users className="h-4 w-4 text-primary shrink-0" />
+          {sub.plan === 'pro' ? (
+            <span className="text-sm text-foreground font-medium">Pro Plan: Unlimited VAs</span>
+          ) : sub.plan === 'trial' ? (
+            <>
+              <span className="text-sm text-foreground font-medium">Trial: {vaCount}/{maxVAs ?? 3} VAs used</span>
+              {trialDaysLeft !== null && (
+                <Badge className="bg-warning/10 text-warning border-0 text-xs">{trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''} left</Badge>
+              )}
+              <Progress value={(vaCount / (maxVAs ?? 3)) * 100} className="w-24 h-2" />
+            </>
+          ) : (
+            <>
+              <span className="text-sm text-foreground font-medium">Starter Plan: {vaCount}/{maxVAs ?? 3} VAs used</span>
+              <Progress value={(vaCount / (maxVAs ?? 3)) * 100} className="w-24 h-2" />
+            </>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-foreground">Team</h1>
         {can('addMembers') && (
-          <Button onClick={() => setAddOpen(true)} className="bg-primary hover:bg-primary/90 glow-border"><Plus className="h-4 w-4 mr-1" /> Invite Team Member</Button>
+          <Button onClick={handleInviteClick} className="bg-primary hover:bg-primary/90 glow-border"><Plus className="h-4 w-4 mr-1" /> Invite Team Member</Button>
         )}
       </div>
 
@@ -163,6 +202,7 @@ export default function TeamPage() {
       </div>
 
       <AddMemberModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>

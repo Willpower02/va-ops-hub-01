@@ -1,6 +1,6 @@
-import { Check } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const STARTER_CHECKOUT_URL = 'https://whop.com/va-tracker/starter-88';
 const PRO_CHECKOUT_URL = 'https://whop.com/va-tracker/pro-e1-9109';
@@ -34,6 +34,8 @@ const plans = [
 
 export default function PricingPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isExpired = searchParams.get('reason') === 'expired';
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,6 +52,12 @@ export default function PricingPage() {
       </nav>
 
       <section className="px-6 md:px-12 py-16 max-w-5xl mx-auto">
+        {isExpired && (
+          <div className="max-w-3xl mx-auto mb-8 flex items-center gap-3 bg-destructive/10 border border-destructive/30 rounded-xl px-4 py-3">
+            <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+            <p className="text-sm text-foreground">Your subscription has expired. Choose a plan to continue.</p>
+          </div>
+        )}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-extrabold text-foreground mb-3">Simple, Transparent Pricing</h1>
           <p className="text-lg text-muted-foreground">Start with a 7-day free trial. No credit card required.</p>

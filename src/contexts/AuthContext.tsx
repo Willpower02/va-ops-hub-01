@@ -107,7 +107,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (fetchId !== fetchIdRef.current) return;
       if (orgResult.data) {
         console.log('[Auth] organization found —', orgResult.data.organization_id, 'role:', orgResult.data.role);
-        setOrgId(orgResult.data.organization_id);
+        const currentOrgId = orgResult.data.organization_id;
+
+        // Check subscription status
+        const { data: orgData } = await supabase
+          .from('organizations')
+          .select('subscription_status, trial_ends_at')
+          .eq('id', currentOrgId)
+          .single();
+
+        if (fetchId !== fetchIdRef.current) return;
+
+        if (orgData) {
+          const status = orgData.subscription_status;
+          const trialEnd = orgData.trial_ends_at ? new Date(orgData.trial_ends_at) : null;
+          const trialExpired = trialEnd && trialEnd < new Date();
+
+          if (status === 'expired' || (status === 'trialing' && trialExpired)) {
+            console.log('[Auth] subscription expired — signing out and redirecting to pricing');
+            await supabase.auth.signOut();
+            window.location.href = '/pricing?reason=expired';
+            return;
+          }
+        }
+
+        setOrgId(currentOrgId);
         setRole((orgResult.data.role as Role) || null);
       } else {
         console.log('[Auth] no organization found — redirecting to create organization');
