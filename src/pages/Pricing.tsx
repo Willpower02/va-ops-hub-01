@@ -19,7 +19,7 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: 49,
+    price: 45,
     popular: true,
     checkoutUrl: PRO_CHECKOUT_URL,
     features: [
