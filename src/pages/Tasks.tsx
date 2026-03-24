@@ -86,15 +86,22 @@ export default function TasksPage() {
     }
   };
 
-  const handleStop = async (task: any) => {
-    setLoading(task.id, true);
+  const handleStop = (task: any) => {
+    setStopTarget({ id: task.id });
+  };
+
+  const confirmStop = async (notes: string) => {
+    if (!stopTarget) return;
+    const taskId = stopTarget.id;
+    setLoading(taskId, true);
     try {
-      await timerControls.stop.mutateAsync(task.id);
+      await timerControls.stop.mutateAsync({ taskId, notes: notes || undefined });
       toast.success('Task completed');
     } catch (err: any) {
       toast.error(err.message || 'Failed to stop task');
     } finally {
-      setLoading(task.id, false);
+      setLoading(taskId, false);
+      setStopTarget(null);
     }
   };
 
