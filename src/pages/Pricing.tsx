@@ -34,6 +34,8 @@ const plans = [
 
 export default function PricingPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isExpired = searchParams.get('reason') === 'expired';
 
   return (
     <div className="min-h-screen bg-background">
