@@ -13,6 +13,8 @@ import { format } from 'date-fns';
 
 export default function SettingsPage() {
   const { userName, userEmail, role, can, profile, orgId, session } = useAuth();
+  const { data: sub } = useSubscription();
+  const navigate = useNavigate();
   const initials = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
 
   // Profile state
